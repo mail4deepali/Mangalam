@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace Web.Controllers
+namespace MMB.Mangalam.Web.Controllers
 {
     [ApiController]
     [Route("[controller]")]
