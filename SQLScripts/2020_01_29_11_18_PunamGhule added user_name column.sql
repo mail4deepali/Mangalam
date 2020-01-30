@@ -1,5 +1,4 @@
 
-
 alter table user_table 
 add column  user_name character varying(300) COLLATE pg_catalog."default" NULL;
 

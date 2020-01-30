@@ -7,4 +7,5 @@ export class User {
     alternate_phone_number: string;
     password: string;
     token?: string;
+    roleid: number;
 }
