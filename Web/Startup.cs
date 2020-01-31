@@ -6,6 +6,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MMB.Mangalam.Web.Service;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using MMB.Mangalam.Web.Model.Helpers;
+using Microsoft.IdentityModel.Tokens;
 
 namespace MMB.Mangalam.Web
 {
@@ -24,6 +28,36 @@ namespace MMB.Mangalam.Web
             
 
             services.AddControllersWithViews();
+
+            var appSettingsSection = Configuration.GetSection("AppSettings");
+            services.Configure<AppSettings>(appSettingsSection);
+
+            services.AddScoped<UserService, UserService>();
+            services.AddScoped<SecurityService, SecurityService>();          
+    
+            // configure jwt authentication
+            var appSettings = appSettingsSection.Get<AppSettings>();
+            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
+
+            //jwt
+
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -58,6 +92,9 @@ namespace MMB.Mangalam.Web
 
             app.UseRouting();
 
+            app.UseAuthentication();
+            app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
@@ -77,6 +114,8 @@ namespace MMB.Mangalam.Web
                     spa.UseAngularCliServer(npmScript: "start");
                 }
             });
+
+
         }
     }
 }
