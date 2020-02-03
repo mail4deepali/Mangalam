@@ -20,7 +20,6 @@ DROP CONSTRAINT candidate_education_id_fkey,
 DROP CONSTRAINT candidate_color_complexionid_fkey,
 DROP CONSTRAINT candidate_family_typeid_fkey,
 DROP CONSTRAINT candidate_genderid_fkey,
-DROP CONSTRAINT candidate_pkey,
 DROP CONSTRAINT candidate_religionid_fkey;
 
 ALTER TABLE candidate
