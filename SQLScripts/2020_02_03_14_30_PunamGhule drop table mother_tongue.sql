@@ -1,0 +1,1 @@
+drop table mother_tongue
