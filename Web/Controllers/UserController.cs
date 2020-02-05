@@ -26,7 +26,7 @@ namespace MMB.Mangalam.Web.Controllers
         [HttpPost("authenticate")]
         public IActionResult Authenticate([FromBody]AuthenticateModel model)
         {
-            var user = _userService.Authenticate(model.user_name, model.password);
+            User user = _userService.Authenticate(model.user_name, model.password);
 
             if (user == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
@@ -37,7 +37,7 @@ namespace MMB.Mangalam.Web.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var users = _userService.GetAll();
+            IEnumerable<User> users = _userService.GetAll();
             return Ok(users);
         }
     }

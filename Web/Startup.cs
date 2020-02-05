@@ -32,6 +32,7 @@ namespace MMB.Mangalam.Web
             services.Configure<AppSettings>(appSettingsSection);
 
             services.AddScoped<UserService, UserService>();
+            services.AddScoped<RegistrationService, RegistrationService>();
             services.AddScoped<SecurityService, SecurityService>();          
     
             // configure jwt authentication

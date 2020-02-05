@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Model
+namespace MMB.Mangalam.Web.Model
 {
     public interface IUserService
     {
