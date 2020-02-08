@@ -29,12 +29,18 @@ namespace MMB.Mangalam.Web.Service
             _appSettings = appSettings.Value;
         }
 
-        public CandidateModel RegisterNewCandidate(string userName, string password)
+        public void RegisterNewCandidate(Candidate candidate)
         {
-            return null;
+            using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
+            {
+                dbConnection.Open();
+                dbConnection.Execute("INSERT INTO candidate (first_name,last_name, phone_number,gender_id, caste_id, religion_id, education_id, family_type_id ) VALUES(@candidate_first_name,@candidate_last_name,@candidate_phone_number, @gender, @caste, @religion, @education,@familytype)", candidate);
+                dbConnection.Execute("INSERT INTO address (address_line_1,address_line_2,country_id,state_id,district_id,taluka_id) VALUES(@candidate_address_line_1,@candidate_address_line_2,1,@candidate_state, @candidate_district, @candidate_taluka)", candidate);
+            }
+
         }
 
-        public string ValidateForm(CandidateModel candidateform)
+        public string ValidateForm(Candidate candidateform)
         {
             string messsge ="";
             if (candidateform.first_name.Length < 2)
