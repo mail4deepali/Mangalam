@@ -10,7 +10,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using MMB.Mangalam.Web.Model.Helpers;
 using Microsoft.Extensions.Options;
-
+using FluentValidation;
 
 namespace MMB.Mangalam.Web.Service
 {
@@ -40,21 +40,11 @@ namespace MMB.Mangalam.Web.Service
 
         }
 
-        public string ValidateForm(Candidate candidateform)
+        public FluentValidation.Results.ValidationResult ValidateForm(Candidate candidateform)
         {
-            string messsge ="";
-            if (candidateform.first_name.Length < 2)
-            {
-                messsge += "firstname is too short";
-            }
-            if (candidateform.last_name.Length < 2)
-            {
-                messsge += "lastname is too short";
-            }
-            
-
-
-            return null;
+            var validator = new CandidateValidator();
+            var result = validator.Validate(candidateform);      
+            return result;
         }
 
     }

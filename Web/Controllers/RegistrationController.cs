@@ -23,7 +23,7 @@ namespace MMB.Mangalam.Web.Controllers
         {
             var result = _registrationService.ValidateForm(model);
 
-            if(result == null)
+            if(result.Errors.Count == 0)
             {
                _registrationService.RegisterNewCandidate(model);
 
