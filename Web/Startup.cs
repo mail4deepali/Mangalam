@@ -70,9 +70,10 @@ namespace MMB.Mangalam.Web
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseCors(options => options.WithOrigins("http://localhost:4200").AllowAnyMethod());
             }
 
-            app.UseCors(options => options.WithOrigins("http://localhost:4200").AllowAnyMethod());
+            
 
             app.UseHttpsRedirection();
             

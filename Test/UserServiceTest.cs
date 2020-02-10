@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Xunit;
 using MMB.Mangalam.Web.Model.Helpers;
+using Test.Helpers;
 
 namespace Test
 {
@@ -12,17 +13,23 @@ namespace Test
         [Fact]
         public void TestAuthenticate()
         {
-            //ConnectionStringService connectionStringService 
-            //    = new ConnectionStringService(ConnectionString.Value);
+            ConnectionStringService connectionStringService
+                = new ConnectionStringService(ConnectionString.Value);
 
-            //SecurityService securityService = new SecurityService();
-            //AppSettings appSettings = 
+            SecurityService securityService = new SecurityService();
+           
+            UserService userService = new UserService(connectionStringService, securityService, 
+                IOptionsHelper.Get());
 
-            //UserService userService = new UserService(connectionStringService, securityService);
+            var user = userService.Authenticate("mladmin", "ML@Vkt0rY");
 
-            //var user = userService.Authenticate("mladmin", "ML@Vkt0rY1");
+            Assert.NotNull(user);
+            Assert.NotNull(user.token);
+            Assert.True(user.token.Length > 0);
 
-            //Assert.NotNull(user);
+            //no need to test the saved user
+            //var savedUser = userService.Get(user.id);
+            //Assert.Equal(savedUser.token, user.token);
 
         }
     }

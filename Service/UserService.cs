@@ -52,11 +52,18 @@ namespace MMB.Mangalam.Web.Service
                 {
                     new Claim(ClaimTypes.Name, user.id.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddMinutes(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             user.token = tokenHandler.WriteToken(token);
+
+
+            //added this as saw in 1 post but seems not needed
+            //using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))
+            //{
+            //    connection.Execute("Update user_table set token = @token where id = @user_id", new { user.token, user_id = user.id });
+            //}
 
             return user.WithoutPassword();
 
@@ -69,6 +76,15 @@ namespace MMB.Mangalam.Web.Service
                 List<User> users = connection.QuerySingle<List<User>>("Select * from user_table ");
                 return users.WithoutPasswords();
             }           
+        }
+
+        public User Get(int id)
+        {
+            using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))
+            {
+                User user = connection.QuerySingle<User>("Select * from user_table where id = @id", new { id });
+                return user;
+            }
         }
     }
 }

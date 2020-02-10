@@ -6,7 +6,7 @@ using MMB.Mangalam.Web.Model;
 
 namespace MMB.Mangalam.Web.Controllers
 {
-   // [Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class RegistrationController : ControllerBase
@@ -17,7 +17,6 @@ namespace MMB.Mangalam.Web.Controllers
             _registrationService = registrationService;
         }
 
-        [AllowAnonymous]
         [HttpPost("register")]
         public IActionResult RegisterCandidate([FromBody]Candidate model)
         {
