@@ -4,13 +4,13 @@ using System.Text;
 using FluentValidation;
 namespace MMB.Mangalam.Web.Model.Helpers
 {
-    public class CandidateValidator: AbstractValidator<Candidate>
+    public class CandidateValidator: AbstractValidator<NewRegistrationViewModel>
     {
         public CandidateValidator()
         {
             RuleFor(candidate => candidate.first_name).NotNull().NotEmpty().MinimumLength(2).WithMessage("vallid user first name required");
             RuleFor(candidate => candidate.last_name).NotNull().NotEmpty().MinimumLength(2).WithMessage("vallid user last name required");
-            RuleFor(candidate => candidate.phone_number).NotNull().NotEmpty().GreaterThan(0).WithMessage("vallid user phone number required");
+            RuleFor(candidate => candidate.phone_number).NotNull().NotEmpty().GreaterThan(999999999).LessThan(9999999999).WithMessage("phone number must be 10 digit");
             RuleFor(candidate => candidate.address_line_1).NotNull().NotEmpty().MinimumLength(2).WithMessage("vallid user address line 1 required");
             RuleFor(candidate => candidate.address_line_2).NotNull().NotEmpty().MinimumLength(2).WithMessage("vallid user address line 2 required");
             RuleFor(candidate => candidate.taluka).NotNull().NotEmpty().GreaterThan(0).WithMessage("vallid user taluka required");

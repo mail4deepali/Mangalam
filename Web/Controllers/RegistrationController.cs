@@ -18,17 +18,16 @@ namespace MMB.Mangalam.Web.Controllers
         }
 
         [HttpPost("register")]
-        public IActionResult RegisterCandidate([FromBody]Candidate model)
+        public User RegisterCandidate([FromBody]NewRegistrationViewModel model)
         {
             var result = _registrationService.ValidateForm(model);
-
-            if(result.Errors.Count == 0)
+            User user = new User();
+            if(result.IsValid)
             {
-               _registrationService.RegisterNewCandidate(model);
-
+                user = _registrationService.RegisterNewCandidate(model);
             }
              
-            return null;
+            return user;
         }
 
        

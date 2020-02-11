@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MMB.Mangalam.Web.Model
 {
-    public class Candidate
+    public class NewRegistrationViewModel
     {
         [Required]
         public string first_name { get; set; } 
@@ -13,7 +13,7 @@ namespace MMB.Mangalam.Web.Model
         public string last_name { get; set; } 
        
          [Required]
-         public int phone_number { get; set; }
+         public long phone_number { get; set; }
          [Required]
          public string address_line_1 { get; set; }
          [Required]
@@ -24,13 +24,15 @@ namespace MMB.Mangalam.Web.Model
          public int district { get; set; }
          [Required]
          public int state { get; set; } 
+       
+         public Boolean isCandidateAddressSameAsUserAddress { get; set; } 
 
          [Required]
          public string candidate_first_name { get; set; }
          [Required]
          public string candidate_last_name { get; set; }
          [Required]
-         public int candidate_phone_number { get; set; }
+         public long candidate_phone_number { get; set; }
          [Required]
          public string candidate_address_line_1 { get; set; }
          [Required]

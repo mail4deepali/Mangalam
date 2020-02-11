@@ -65,7 +65,7 @@ namespace MMB.Mangalam.Web.Service
             //    connection.Execute("Update user_table set token = @token where id = @user_id", new { user.token, user_id = user.id });
             //}
 
-            return user.WithoutPassword();
+            return user;
 
         }
 
@@ -74,7 +74,7 @@ namespace MMB.Mangalam.Web.Service
             using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))
             {
                 List<User> users = connection.QuerySingle<List<User>>("Select * from user_table ");
-                return users.WithoutPasswords();
+                return users;
             }           
         }
 

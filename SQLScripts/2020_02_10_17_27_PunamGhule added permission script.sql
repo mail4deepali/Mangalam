@@ -1,0 +1,5 @@
+
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO mangalam_app;
+
+
+

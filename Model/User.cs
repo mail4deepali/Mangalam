@@ -13,6 +13,7 @@ namespace MMB.Mangalam.Web.Model
         public string password { get; set; } = "";        
         public string token { get; set; } = "";
 
+        public int address_id { get; set; }
         public int roleid { get; set; }
 
     }
