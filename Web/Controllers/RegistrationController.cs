@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
 using Microsoft.AspNetCore.Authorization;
 using MMB.Mangalam.Web.Service;
 using MMB.Mangalam.Web.Model;
-
+using System.Net;
+using System.Net.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace MMB.Mangalam.Web.Controllers
 {
@@ -18,16 +21,28 @@ namespace MMB.Mangalam.Web.Controllers
         }
 
         [HttpPost("register")]
-        public User RegisterCandidate([FromBody]NewRegistrationViewModel model)
+        public AuthenticateModel? RegisterCandidate([FromBody]NewRegistrationViewModel model)
         {
             var result = _registrationService.ValidateForm(model);
-            User user = new User();
-            if(result.IsValid)
+            APIResponse<AuthenticateModel> response = new APIResponse<AuthenticateModel>();
+
+            if (result.IsValid)
             {
-                user = _registrationService.RegisterNewCandidate(model);
+                response.Data = _registrationService.RegisterNewCandidate(model);
+                response.IsSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                return response.Data;
             }
-             
-            return user;
+            else
+            {
+                return null;
+            }
+            //var options = new JsonSerializerOptions
+            //{
+            //    WriteIndented = true
+            //};
+            // return JsonSerializer.Serialize(response, options);
+         
         }
 
        

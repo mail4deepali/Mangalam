@@ -8,6 +8,7 @@ namespace MMB.Mangalam.Web.Model
     [Table("candidate")]
     public class Candidate
     {
+        public int id { get; set; }
         public string first_name { get; set; }      
         public string last_name { get; set; }
         public long phone_number { get; set; }      

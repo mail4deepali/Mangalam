@@ -6,9 +6,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace MMB.Mangalam.Web.Model
 {
     [Table("religion")]
-    class Religion
+    public class Religion
     {
-        public int religionid { get; set; }
+        public int id { get; set; }
         public string religion_name { get; set; } = "";
         public string religion_description { get; set; } = "";
     }

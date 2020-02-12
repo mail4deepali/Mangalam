@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
+
 namespace MMB.Mangalam.Web.Model
 {
-    [Table("gender")]
-    public class Gender
+    [Table("candidate_language_map")]
+    public class CandidateLanguageMap
     {
         public int id { get; set; }
-        public string gender { get; set; } = "";
-        public string gender_description { get; set; } = "";
+        public int candidate_id { get; set; }
+        public int language_id { get; set; }
+       
     }
 }

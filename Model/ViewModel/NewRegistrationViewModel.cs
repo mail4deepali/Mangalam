@@ -19,11 +19,11 @@ namespace MMB.Mangalam.Web.Model
          [Required]
          public string address_line_2 { get; set; } 
          [Required]
-         public int taluka { get; set; }
+         public int taluka_id { get; set; }
          [Required]
-         public int district { get; set; }
+         public int district_id { get; set; }
          [Required]
-         public int state { get; set; } 
+         public int state_id { get; set; } 
        
          public Boolean isCandidateAddressSameAsUserAddress { get; set; } 
 
@@ -38,22 +38,22 @@ namespace MMB.Mangalam.Web.Model
          [Required]
          public string candidate_address_line_2 { get; set; }
          [Required]
-         public int candidate_taluka { get; set; }
+         public int candidate_taluka_id { get; set; }
          [Required]
-         public int candidate_district { get; set; } 
+         public int candidate_district_id { get; set; } 
          [Required]
-         public int candidate_state { get; set; }
+         public int candidate_state_id { get; set; }
         [Required]
-        public int gender { get; set; }
+        public int gender_id { get; set; }
          [Required]
-         public int religion { get; set; } 
+         public int religion_id { get; set; } 
          [Required]
-         public int caste { get; set; }
+         public int caste_id { get; set; }
          [Required]
-         public int education { get; set; }
+         public int education_id { get; set; }
         [Required]
         public int[] language { get; set; } 
         [Required]
-        public int familytype { get; set; }         
+        public int familytype_id { get; set; }         
     }
 }

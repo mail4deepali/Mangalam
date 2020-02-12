@@ -14,9 +14,8 @@ namespace MMB.Mangalam.Web.Model
         public string? alternate_phone_number { get; set; }
         public string password { get; set; } = "";        
         public string token { get; set; } = "";
-
         public int address_id { get; set; }
-        //public int role_id { get; set; }
+        public int role_id { get; set; }
 
     }
     

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using FluentValidation;
 using MMB.Mangalam.Web.Service.Constants;
 using Dapper.Contrib.Extensions;
+using MMB.Mangalam.Web.Service.Helper;
 
 namespace MMB.Mangalam.Web.Service
 {
@@ -31,31 +32,30 @@ namespace MMB.Mangalam.Web.Service
             _appSettings = appSettings.Value;
         }
 
-        public User RegisterNewCandidate(NewRegistrationViewModel newRegistrationModel)
+        public AuthenticateModel RegisterNewCandidate(NewRegistrationViewModel newRegistrationModel)
         {
+            const int passwordGenerationIndex = 3;
             string username = newRegistrationModel.phone_number.ToString();
-            string password 
-                = newRegistrationModel.first_name.Substring(0, 3) 
-                + newRegistrationModel.last_name.Substring(0, 3) + (newRegistrationModel.phone_number /10000000).ToString();
-            
+            string password = GetPassword(newRegistrationModel.first_name, newRegistrationModel.last_name, newRegistrationModel.phone_number, passwordGenerationIndex);
             string hashedPassword = _SecurityService.HashUserNameAndPassword(username, password);
-            
+            AuthenticateModel infoModel = new AuthenticateModel();
+            infoModel.user_name = username;
+            infoModel.password = password;
+
             User user = new User();
             Address userAddress = new Address();
             Address candidateAddress = new Address();
             Candidate candidate = new Candidate();
+            CandidateLanguageMap candidateLanguageMap;
 
             MapCandidate(candidate, newRegistrationModel);
             MapUser(user, newRegistrationModel);
             MapUserAddress(userAddress, newRegistrationModel);
             MapCandidateAddress(candidateAddress, newRegistrationModel);
 
-
             user.user_name = username;
             user.password = hashedPassword;
-
-            //add in table todo
-            //user.roleid = UserRoleConstants.Candidate;
+            user.role_id = UserRoleConstants.Candidate;
 
             using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
             {
@@ -70,7 +70,15 @@ namespace MMB.Mangalam.Web.Service
                         candidate.address_id = (Int32)dbConnection.Insert<Address>(candidateAddress, transaction);
 
                         candidate.user_id = (Int32)dbConnection.Insert<User>(user, transaction);
-                        dbConnection.Insert<Candidate>(candidate, transaction);
+                        Int16 candidate_id = (Int16)dbConnection.Insert<Candidate>(candidate, transaction);
+
+                        for (int i = 0; i < newRegistrationModel.language.Length; i++)
+                        {
+                            candidateLanguageMap = new CandidateLanguageMap();
+                            candidateLanguageMap.candidate_id = candidate_id;
+                            candidateLanguageMap.language_id = newRegistrationModel.language[i];
+                            dbConnection.Insert<CandidateLanguageMap>(candidateLanguageMap, transaction);
+                        }
 
                         transaction.Commit();
                     }
@@ -81,22 +89,29 @@ namespace MMB.Mangalam.Web.Service
                     }
                 }
                 
-                return user;
+                return infoModel;
                 
             }
 
         }
 
+        private string GetPassword(string first_name, string last_name, long phone_number, int index )
+        {
+            string password = first_name.Substring(0, index) + last_name.Substring(0, index) + ExtensionMethods.GetLastThreeDigit(phone_number, index);
+            return password;
+        }
+
+      
         private void MapCandidate(Candidate candidate, NewRegistrationViewModel model)
         {
             candidate.first_name = model.candidate_first_name;
             candidate.last_name = model.candidate_last_name;
             candidate.phone_number = model.candidate_phone_number;
-            candidate.gender_id = model.gender;
-            candidate.religion_id = model.religion;
-            candidate.caste_id = model.caste;
-            candidate.education_id = model.education;
-            candidate.family_type_id = model.familytype;
+            candidate.gender_id = model.gender_id;
+            candidate.religion_id = model.religion_id;
+            candidate.caste_id = model.caste_id;
+            candidate.education_id = model.education_id;
+            candidate.family_type_id = model.familytype_id;
 
         }
        
@@ -113,9 +128,9 @@ namespace MMB.Mangalam.Web.Service
         {
             address.address_line_1 = newRegistrationModel.address_line_1;
             address.address_line_2 = newRegistrationModel.address_line_2;
-            address.taluka_id = newRegistrationModel.taluka;
-            address.state_id = newRegistrationModel.state;
-            address.district_id = newRegistrationModel.district;
+            address.taluka_id = newRegistrationModel.taluka_id;
+            address.state_id = newRegistrationModel.state_id;
+            address.district_id = newRegistrationModel.district_id;
 
             
         }
@@ -124,15 +139,15 @@ namespace MMB.Mangalam.Web.Service
         {
             address.address_line_1 = newRegistrationModel.candidate_address_line_1;
             address.address_line_2 = newRegistrationModel.candidate_address_line_2;
-            address.taluka_id = newRegistrationModel.candidate_taluka;
-            address.state_id = newRegistrationModel.candidate_state;
-            address.district_id = newRegistrationModel.candidate_district;
+            address.taluka_id = newRegistrationModel.candidate_taluka_id;
+            address.state_id = newRegistrationModel.candidate_state_id;
+            address.district_id = newRegistrationModel.candidate_district_id;
 
         }
 
         public FluentValidation.Results.ValidationResult ValidateForm(NewRegistrationViewModel candidateform)
         {
-            var validator = new CandidateValidator();
+            var validator = new NewRegistrationValidator();
             var result = validator.Validate(candidateform);      
             return result;
         }

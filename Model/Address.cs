@@ -15,5 +15,6 @@ namespace MMB.Mangalam.Web.Model
         public int state_id { get; set; } 
         public int district_id { get; set; } 
         public int taluka_id { get; set; } 
+        public int zip_code { get; set; }
     }
 }

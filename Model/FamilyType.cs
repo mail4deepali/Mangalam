@@ -6,9 +6,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace MMB.Mangalam.Web.Model
 {
     [Table("family_type")]
-    class FamilyType
+    public class FamilyType
     {
-        public int family_typeid { get; set; }
+        public int id { get; set; }
         public string family_type { get; set; } = "";
         public string family_type_description { get; set; } = "";
     }

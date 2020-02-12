@@ -1,0 +1,2 @@
+ALTER TABLE public.candidate_language_map
+    ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 );
