@@ -1,2 +1,2 @@
-Alter table country
-drop column address_id
+Alter table address
+drop column country_id
