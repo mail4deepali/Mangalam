@@ -56,6 +56,7 @@ namespace MMB.Mangalam.Web.Service
             user.user_name = username;
             user.password = hashedPassword;
             user.role_id = UserRoleConstants.Candidate;
+            user.IsUserloginAfterRegistration = false;
 
             using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
             {

@@ -8,9 +8,9 @@ namespace MMB.Mangalam.Web.Model
     [Table("state")]
     public class State
     {
-        public int id { get; set; }
-        public int countryid { get; set; }
+        public int id { get; set; }       
         public string state_name { get; set; } = "";
         public string state_description { get; set; } = "";
+        public int countryid { get; set; }
     }
 }

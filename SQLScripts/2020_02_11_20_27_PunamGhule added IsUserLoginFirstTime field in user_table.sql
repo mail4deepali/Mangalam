@@ -1,3 +1,3 @@
 
 ALTER TABLE public.user_table
-    ADD COLUMN "IsUserloginFirstTime" boolean;
+    ADD COLUMN "IsUserloginAfterRegistration" boolean;

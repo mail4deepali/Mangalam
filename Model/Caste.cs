@@ -11,6 +11,6 @@ namespace MMB.Mangalam.Web.Model
         public int id { get; set; }
         public string caste_name { get; set; } = "";
         public string caste_description { get; set; } = "";
-        public int religionid { get; set; }
+
     }
 }

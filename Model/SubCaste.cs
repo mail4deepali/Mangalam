@@ -9,7 +9,7 @@ namespace MMB.Mangalam.Web.Model
     public class SubCaste
     {
         public int id { get; set; }
-        public int casteid { get; set; }
         public string subcaste_name { get; set; } = "";
+        public int casteid { get; set; }
     }
 }
