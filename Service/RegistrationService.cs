@@ -12,6 +12,7 @@ using MMB.Mangalam.Web.Model.Helpers;
 using Microsoft.Extensions.Options;
 using FluentValidation;
 using MMB.Mangalam.Web.Service.Constants;
+using Dapper.Contrib.Extensions;
 
 namespace MMB.Mangalam.Web.Service
 {
@@ -33,11 +34,16 @@ namespace MMB.Mangalam.Web.Service
         public User RegisterNewCandidate(NewRegistrationViewModel newRegistrationModel)
         {
             string username = newRegistrationModel.phone_number.ToString();
-            string password = newRegistrationModel.first_name.Substring(0, 3) + newRegistrationModel.last_name.Substring(0, 3) + (newRegistrationModel.phone_number /10000000).ToString();
+            string password 
+                = newRegistrationModel.first_name.Substring(0, 3) + newRegistrationModel.last_name.Substring(0, 3) + (newRegistrationModel.phone_number /10000000).ToString();
+            
             string hashedPassword = _SecurityService.HashUserNameAndPassword(username, password);
+            
             User user = new User();
-            Address useraddress, candidateaddress;
+            Address userAddress = new Address();
+            Address candidateAddress = new Address();
             Candidate candidate = new Candidate();
+
 
             using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
             {
@@ -46,78 +52,72 @@ namespace MMB.Mangalam.Web.Service
                 using (var transaction = dbConnection.BeginTransaction())
                 {
 
-                    candidate = MapCandidate(candidate, newRegistrationModel);
-                    user = MapUser(user, newRegistrationModel);
+                    MapCandidate(candidate, newRegistrationModel);
+                    MapUser(user, newRegistrationModel);
+                    MapUserAddress(userAddress, newRegistrationModel);
+                    MapCandidateAddress(candidateAddress, newRegistrationModel);
+
                     user.user_name = username;
                     user.password = hashedPassword;
+                    //add in table todo
+                    //user.roleid = UserRoleConstants.Candidate;
 
-                    if (newRegistrationModel.isCandidateAddressSameAsUserAddress)
-                    {
-                        useraddress = dbConnection.QueryFirstOrDefault<Address>("Select * from address where address_line_1 = @address_line_1 and address_line_2 = @address_line_2 and country_id = 1 and state_id = @state and district_id = @district and taluka_id = @taluka  ", newRegistrationModel);
-                        if (useraddress == null)
-                        {
-                            dbConnection.Execute("INSERT INTO address (address_line_1,address_line_2,country_id,state_id,district_id,taluka_id) VALUES(@address_line_1,@address_line_2,1,@state, @district, @taluka)", newRegistrationModel);
-                            useraddress = dbConnection.QueryFirstOrDefault<Address>("Select * from address where address_line_1 = @address_line_1 and address_line_2 = @address_line_2 and country_id = 1 and state_id = @state and district_id = @district and taluka_id = @taluka  ", newRegistrationModel);
-                        }
+                    user.address_id = (Int32)dbConnection.Insert<Address>(userAddress, transaction);
+                    candidate.address_id = (Int32)dbConnection.Insert<Address>(candidateAddress, transaction);
 
-                        user.address_id = useraddress.id;
-                        candidate.address_id = useraddress.id;
-                    }
-                    else
-                    {
-                        useraddress = dbConnection.QueryFirstOrDefault<Address>("Select * from address where address_line_1 = @address_line_1 and address_line_2 = @address_line_2 and country_id = 1 and state_id = @state and district_id = @district and taluka_id = @taluka  ", newRegistrationModel);
-                        if (useraddress == null)
-                        {
-                            dbConnection.Execute("INSERT INTO address (address_line_1,address_line_2,country_id,state_id,district_id,taluka_id) VALUES(@address_line_1,@address_line_2,1,@state, @district, @taluka)", newRegistrationModel);
-                            useraddress = dbConnection.QueryFirstOrDefault<Address>("Select * from address where address_line_1 = @address_line_1 and address_line_2 = @address_line_2 and country_id = 1 and state_id = @state and district_id = @district and taluka_id = @taluka  ", newRegistrationModel);
-                        }
-                        user.address_id = useraddress.id;
-
-                        candidateaddress = dbConnection.QueryFirstOrDefault<Address>("Select * from address where address_line_1 = @address_line_1 and address_line_2 = @address_line_2 and country_id = 1 and state_id = @state and district_id = @district and taluka_id = @taluka  ", newRegistrationModel);
-                        if (candidateaddress == null)
-                        {
-                            dbConnection.Execute("INSERT INTO address (address_line_1,address_line_2,country_id,state_id,district_id,taluka_id) VALUES(@candidate_address_line_1,@candidate_address_line_2,1,@candidate_state, @candidate_district, @candidate_taluka)", newRegistrationModel);
-                            candidateaddress = dbConnection.QueryFirstOrDefault<Address>("Select * from address where address_line_1 = @address_line_1 and address_line_2 = @address_line_2 and country_id = 1 and state_id = @state and district_id = @district and taluka_id = @taluka  ", newRegistrationModel);
-                        }
-                        candidate.address_id = candidateaddress.id;
-
-
-                    }
-                    
-                    dbConnection.Execute("INSERT INTO user_table (first_name,last_name, phone_number,password, user_name , address_id) VALUES(@first_name,@last_name,@phone_number,@password,@user_name, @address_id)", user);
-
-                    dbConnection.Execute("INSERT INTO candidate (first_name,last_name, phone_number,gender_id, caste_id, religion_id, education_id, family_type_id , address_id) VALUES(@first_name,@last_name,@phone_number, @gender_id, @caste_id, @religion_id, @education_id,@familytype_id, @address_id)", candidate);
+                    candidate.user_id = (Int32)dbConnection.Insert<User>(user, transaction);
+                    dbConnection.Insert<Candidate>(candidate, transaction);
 
                     transaction.Commit();
                 }
-                user.password = password;
+                
                 return user;
                 
             }
 
         }
 
-        private Candidate MapCandidate(Candidate candidate, NewRegistrationViewModel model)
+        private void MapCandidate(Candidate candidate, NewRegistrationViewModel model)
         {
-            candidate.first_name = model.first_name;
-            candidate.last_name = model.last_name;
-            candidate.phone_number = model.phone_number;
+            candidate.first_name = model.candidate_first_name;
+            candidate.last_name = model.candidate_last_name;
+            candidate.phone_number = model.candidate_phone_number;
             candidate.gender_id = model.gender;
             candidate.religion_id = model.religion;
             candidate.caste_id = model.caste;
             candidate.education_id = model.education;
-            candidate.familytype_id = model.familytype;
+            candidate.family_type_id = model.familytype;
 
-            return candidate;
         }
        
-        private User MapUser(User user, NewRegistrationViewModel newRegistrationModel)
+        private void MapUser(User user, NewRegistrationViewModel newRegistrationModel)
         {
             user.first_name = newRegistrationModel.first_name;
             user.last_name = newRegistrationModel.last_name;         
             user.phone_number = newRegistrationModel.phone_number.ToString();
-            user.roleid = UserRoleConstants.Candidate;
-            return user;
+            
+            
+        }
+
+        private void MapUserAddress(Address address, NewRegistrationViewModel newRegistrationModel)
+        {
+            address.address_line_1 = newRegistrationModel.address_line_1;
+            address.address_line_2 = newRegistrationModel.address_line_2;
+            address.taluka_id = newRegistrationModel.taluka;
+            address.state_id = newRegistrationModel.state;
+            address.district_id = newRegistrationModel.district;
+
+            
+        }
+
+        private void MapCandidateAddress(Address address, NewRegistrationViewModel newRegistrationModel)
+        {
+            address.address_line_1 = newRegistrationModel.candidate_address_line_1;
+            address.address_line_2 = newRegistrationModel.candidate_address_line_2;
+            address.taluka_id = newRegistrationModel.candidate_taluka;
+            address.state_id = newRegistrationModel.candidate_state;
+            address.district_id = newRegistrationModel.candidate_district;
+
         }
 
         public FluentValidation.Results.ValidationResult ValidateForm(NewRegistrationViewModel candidateform)

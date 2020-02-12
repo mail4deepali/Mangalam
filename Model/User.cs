@@ -1,7 +1,9 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MMB.Mangalam.Web.Model
 {
+    [Table("user_table")]
     public class User
     {
         public int id { get; set; }
@@ -14,7 +16,7 @@ namespace MMB.Mangalam.Web.Model
         public string token { get; set; } = "";
 
         public int address_id { get; set; }
-        public int roleid { get; set; }
+        //public int role_id { get; set; }
 
     }
     

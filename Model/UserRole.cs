@@ -1,7 +1,9 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MMB.Mangalam.Web.Model
 {
+    [Table("user_role")]
     public class UserRole
     {
         
