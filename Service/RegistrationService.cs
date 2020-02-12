@@ -35,7 +35,8 @@ namespace MMB.Mangalam.Web.Service
         {
             string username = newRegistrationModel.phone_number.ToString();
             string password 
-                = newRegistrationModel.first_name.Substring(0, 3) + newRegistrationModel.last_name.Substring(0, 3) + (newRegistrationModel.phone_number /10000000).ToString();
+                = newRegistrationModel.first_name.Substring(0, 3) 
+                + newRegistrationModel.last_name.Substring(0, 3) + (newRegistrationModel.phone_number /10000000).ToString();
             
             string hashedPassword = _SecurityService.HashUserNameAndPassword(username, password);
             
@@ -44,6 +45,17 @@ namespace MMB.Mangalam.Web.Service
             Address candidateAddress = new Address();
             Candidate candidate = new Candidate();
 
+            MapCandidate(candidate, newRegistrationModel);
+            MapUser(user, newRegistrationModel);
+            MapUserAddress(userAddress, newRegistrationModel);
+            MapCandidateAddress(candidateAddress, newRegistrationModel);
+
+
+            user.user_name = username;
+            user.password = hashedPassword;
+
+            //add in table todo
+            //user.roleid = UserRoleConstants.Candidate;
 
             using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
             {
@@ -52,23 +64,21 @@ namespace MMB.Mangalam.Web.Service
                 using (var transaction = dbConnection.BeginTransaction())
                 {
 
-                    MapCandidate(candidate, newRegistrationModel);
-                    MapUser(user, newRegistrationModel);
-                    MapUserAddress(userAddress, newRegistrationModel);
-                    MapCandidateAddress(candidateAddress, newRegistrationModel);
+                    try
+                    {
+                        user.address_id = (Int32)dbConnection.Insert<Address>(userAddress, transaction);
+                        candidate.address_id = (Int32)dbConnection.Insert<Address>(candidateAddress, transaction);
 
-                    user.user_name = username;
-                    user.password = hashedPassword;
-                    //add in table todo
-                    //user.roleid = UserRoleConstants.Candidate;
+                        candidate.user_id = (Int32)dbConnection.Insert<User>(user, transaction);
+                        dbConnection.Insert<Candidate>(candidate, transaction);
 
-                    user.address_id = (Int32)dbConnection.Insert<Address>(userAddress, transaction);
-                    candidate.address_id = (Int32)dbConnection.Insert<Address>(candidateAddress, transaction);
-
-                    candidate.user_id = (Int32)dbConnection.Insert<User>(user, transaction);
-                    dbConnection.Insert<Candidate>(candidate, transaction);
-
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
                 
                 return user;
