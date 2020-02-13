@@ -55,7 +55,7 @@ namespace MMB.Mangalam.Web.Service
 
             user.user_name = username;
             user.password = hashedPassword;
-            user.role_id = UserRoleConstants.Candidate;
+            user.role_id = UserRoles.Candidate;
             user.IsUserloginAfterRegistration = false;
 
             using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
@@ -98,7 +98,7 @@ namespace MMB.Mangalam.Web.Service
 
         private string GetPassword(string first_name, string last_name, long phone_number, int index )
         {
-            string password = first_name.Substring(0, index) + last_name.Substring(0, index) + ExtensionMethods.GetLastThreeDigit(phone_number, index);
+            string password = first_name.Substring(0, index) + last_name.Substring(0, index) + phone_number.ToString().LastNChars(index);
             return password;
         }
 
@@ -132,7 +132,7 @@ namespace MMB.Mangalam.Web.Service
             address.taluka_id = newRegistrationModel.taluka_id;
             address.state_id = newRegistrationModel.state_id;
             address.district_id = newRegistrationModel.district_id;
-
+            address.zip_code = newRegistrationModel.zip_code;
             
         }
 
@@ -143,7 +143,7 @@ namespace MMB.Mangalam.Web.Service
             address.taluka_id = newRegistrationModel.candidate_taluka_id;
             address.state_id = newRegistrationModel.candidate_state_id;
             address.district_id = newRegistrationModel.candidate_district_id;
-
+            address.zip_code = newRegistrationModel.candidate_zip_code;
         }
 
         public FluentValidation.Results.ValidationResult ValidateForm(NewRegistrationViewModel candidateform)

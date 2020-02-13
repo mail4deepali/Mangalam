@@ -25,8 +25,6 @@ namespace MMB.Mangalam.Web.Model
          [Required]
          public int state_id { get; set; } 
        
-         public Boolean isCandidateAddressSameAsUserAddress { get; set; } 
-
          [Required]
          public string candidate_first_name { get; set; }
          [Required]
@@ -55,5 +53,8 @@ namespace MMB.Mangalam.Web.Model
         public int[] language { get; set; } 
         [Required]
         public int familytype_id { get; set; }         
+
+        public int zip_code { get; set; }
+        public int candidate_zip_code { get; set; }
     }
 }

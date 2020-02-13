@@ -6,17 +6,12 @@ namespace MMB.Mangalam.Web.Service.Helper
 {
     public static class ExtensionMethods
     {
-        public static string GetLastThreeDigit(long number, int index)
+        public static string LastNChars(this string source, int tail_length)
         {
-            string result = "";
+            if (tail_length >= source.Length)
+                return source;
 
-            for (int i = 1; i <= index; i++)
-            {
-                result = (number % 10).ToString() + result;
-                number = number / 10;
-            }
-
-            return result;
+            return source.Substring(source.Length - tail_length);
         }
     }
 }

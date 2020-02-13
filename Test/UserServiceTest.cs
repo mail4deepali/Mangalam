@@ -6,7 +6,7 @@ using Xunit;
 using MMB.Mangalam.Web.Model.Helpers;
 using Test.Helpers;
 
-namespace Test
+namespace MMB.Mangalam.Web.Test
 {
     public class UserServiceTest
     {

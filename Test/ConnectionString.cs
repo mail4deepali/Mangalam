@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Test
+namespace MMB.Mangalam.Web.Test
 {
     public class ConnectionString
     {
-        public const string Value = "Server=127.0.0.1;Port=5432;Database=Mangalam;User Id=mangalam_app;Password=Mangalam@1239;";
+        public const string Value = 
+            "Server=127.0.0.1;Port=5432;Database=Mangalam;User Id=postgres;Password=UbiqsR0cksPG";
     }
 }

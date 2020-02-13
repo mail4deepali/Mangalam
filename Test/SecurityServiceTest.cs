@@ -2,7 +2,7 @@
 using System;
 using Xunit;
 
-namespace Test
+namespace MMB.Mangalam.Web.Test
 {
 
     public class SecurityServiceTest

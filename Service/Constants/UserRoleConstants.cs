@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MMB.Mangalam.Web.Service.Constants
 {
-   public class UserRoleConstants
+   public class UserRoles
     {
         public const int SuperAdmin = 1;
         public const int Admin = 2;
