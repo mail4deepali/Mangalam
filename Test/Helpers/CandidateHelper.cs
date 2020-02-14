@@ -38,6 +38,7 @@ namespace MMB.Mangalam.Web.Test.Helpers
             candidate.family_type_id = family_type_id;
             candidate.gender_id = gender_id;
             candidate.religion_id = religion_id;
+            candidate.last_name = last_name;
 
             return candidate;
         }

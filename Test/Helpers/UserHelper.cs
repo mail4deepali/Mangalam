@@ -11,18 +11,18 @@ namespace MMB.Mangalam.Web.Test.Helpers
 {
     public static class UserHelper
     {
-        public static void  CleanByUserName(string userName)
+        public static void  CleanByUserName(string user_name)
         {
             string sql = @"delete from candidate_language_map where candidate_id in (
-            select id from candidate where user_id = (Select id from user_table where user_name = '1234567890')
+            select id from candidate where user_id = (Select id from user_table where user_name = @user_name)
 	            );
 	
-	            delete from candidate where user_id = (Select id from user_table where user_name = '1234567890');
-	            delete from user_table where user_name = '1234567890';";
+	            delete from candidate where user_id = (Select id from user_table where user_name = @user_name);
+	            delete from user_table where user_name = @user_name;";
 
             using (IDbConnection connection = new NpgsqlConnection(ConnectionString.Value))
             {
-                connection.Execute(sql);
+                connection.Execute(sql, new { user_name });
             }
 
         }

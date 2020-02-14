@@ -13,5 +13,16 @@ namespace MMB.Mangalam.Web.Service.Helper
 
             return source.Substring(source.Length - tail_length);
         }
+
+        public static string Messages(this FluentValidation.Results.ValidationResult result)
+        {
+            StringBuilder message = new StringBuilder();
+            foreach(var error in result.Errors)
+            {
+                message.Append($"{error.ErrorMessage}\n");
+            }
+
+            return message.ToString();
+        }
     }
 }

@@ -14,6 +14,7 @@ using FluentValidation;
 using MMB.Mangalam.Web.Service.Constants;
 using Dapper.Contrib.Extensions;
 using MMB.Mangalam.Web.Service.Helper;
+using MMB.Mangalam.Web.Model.ViewModel;
 
 namespace MMB.Mangalam.Web.Service
 {
@@ -32,73 +33,98 @@ namespace MMB.Mangalam.Web.Service
             _appSettings = appSettings.Value;
         }
 
-        public AuthenticateModel RegisterNewCandidate(NewRegistrationViewModel newRegistrationModel)
+        public JsonResponse<AuthenticateModel> RegisterNewCandidate(NewRegistrationViewModel newRegistrationModel)
         {
-            const int passwordGenerationIndex = 3;
-            string username = newRegistrationModel.phone_number.ToString();
-            string password = GetPassword(newRegistrationModel.first_name, newRegistrationModel.last_name, newRegistrationModel.phone_number, passwordGenerationIndex);
-            string hashedPassword = _SecurityService.HashUserNameAndPassword(username, password);
-            AuthenticateModel infoModel = new AuthenticateModel();
-            infoModel.user_name = username;
-            infoModel.password = password;
+            JsonResponse<AuthenticateModel> jsonResponse = new JsonResponse<AuthenticateModel>();
 
-            User user = new User();
-            Address userAddress = new Address();
-            Address candidateAddress = new Address();
-            Candidate candidate = new Candidate();
-            CandidateLanguageMap candidateLanguageMap;
-
-            MapCandidate(candidate, newRegistrationModel);
-            MapUser(user, newRegistrationModel);
-            MapUserAddress(userAddress, newRegistrationModel);
-            MapCandidateAddress(candidateAddress, newRegistrationModel);
-
-            user.user_name = username;
-            user.password = hashedPassword;
-            user.role_id = UserRoles.Candidate;
-            user.IsUserloginAfterRegistration = false;
-
-            using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
+            var result = ValidateRegistration(newRegistrationModel);
+            if(result.IsValid)
             {
-                dbConnection.Open();
+                const int passwordGenerationIndex = 3;
+                string username = newRegistrationModel.phone_number.ToString();
+                string password = GetPassword(newRegistrationModel.first_name, newRegistrationModel.last_name, newRegistrationModel.phone_number, passwordGenerationIndex);
+                string hashedPassword = _SecurityService.HashUserNameAndPassword(username, password);
 
-                using (var transaction = dbConnection.BeginTransaction())
+                AuthenticateModel infoModel = new AuthenticateModel();
+                infoModel.user_name = username;
+                infoModel.password = password;
+
+                User user = new User();
+                Address userAddress = new Address();
+                Address candidateAddress = new Address();
+                Candidate candidate = new Candidate();
+                CandidateLanguageMap candidateLanguageMap;
+
+                MapCandidate(candidate, newRegistrationModel);
+                MapUser(user, newRegistrationModel);
+                MapUserAddress(userAddress, newRegistrationModel);
+                MapCandidateAddress(candidateAddress, newRegistrationModel);
+
+                user.user_name = username;
+                user.password = hashedPassword;
+                user.role_id = UserRoles.Candidate;
+                user.IsUserloginAfterRegistration = false;
+
+                using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
                 {
+                    dbConnection.Open();
 
-                    try
+                    using (var transaction = dbConnection.BeginTransaction())
                     {
-                        user.address_id = (Int32)dbConnection.Insert<Address>(userAddress, transaction);
-                        candidate.address_id = (Int32)dbConnection.Insert<Address>(candidateAddress, transaction);
 
-                        candidate.user_id = (Int32)dbConnection.Insert<User>(user, transaction);
-                        Int16 candidate_id = (Int16)dbConnection.Insert<Candidate>(candidate, transaction);
-
-                        for (int i = 0; i < newRegistrationModel.language.Length; i++)
+                        try
                         {
-                            candidateLanguageMap = new CandidateLanguageMap();
-                            candidateLanguageMap.candidate_id = candidate_id;
-                            candidateLanguageMap.language_id = newRegistrationModel.language[i];
-                            dbConnection.Insert<CandidateLanguageMap>(candidateLanguageMap, transaction);
-                        }
+                            user.address_id = (Int32)dbConnection.Insert<Address>(userAddress, transaction);
+                            candidate.address_id = (Int32)dbConnection.Insert<Address>(candidateAddress, transaction);
 
-                        transaction.Commit();
-                    }
-                    catch (Exception ex)
-                    {
-                        transaction.Rollback();
-                        throw;
+                            candidate.user_id = (Int32)dbConnection.Insert<User>(user, transaction);
+                            Int16 candidate_id = (Int16)dbConnection.Insert<Candidate>(candidate, transaction);
+
+                            for (int i = 0; i < newRegistrationModel.language.Length; i++)
+                            {
+                                candidateLanguageMap = new CandidateLanguageMap();
+                                candidateLanguageMap.candidate_id = candidate_id;
+                                candidateLanguageMap.language_id = newRegistrationModel.language[i];
+                                dbConnection.Insert<CandidateLanguageMap>(candidateLanguageMap, transaction);
+                            }
+
+                            transaction.Commit();
+
+                            jsonResponse.Data = infoModel;
+                            jsonResponse.IsSuccess = true;
+                            jsonResponse.Message = "Registration Successful";
+
+                        }
+                        catch (Exception ex)
+                        {
+                            if(ex.Message.Contains("user_table_phone_number_unique"))
+                            {
+                                jsonResponse.Message = "User phone number already exists";
+                            }
+                            else
+                            {
+                                jsonResponse.Message = "Some error occured. Please contact administrator.";
+                            }
+
+                            transaction.Rollback();
+                            jsonResponse.IsSuccess = false;
+                            
+                        }
                     }
                 }
-                
-                return infoModel;
-                
             }
+            else
+            {
+                jsonResponse.IsSuccess = false;
+            }
+
+            return jsonResponse;
 
         }
 
         private string GetPassword(string first_name, string last_name, long phone_number, int index )
         {
-            string password = first_name.Substring(0, index) + last_name.Substring(0, index) + phone_number.ToString().LastNChars(index);
+            string password = first_name.Substring(0, index).ToLower() + last_name.Substring(0, index).ToLower() + phone_number.ToString().LastNChars(index);
             return password;
         }
 
@@ -146,7 +172,7 @@ namespace MMB.Mangalam.Web.Service
             address.zip_code = newRegistrationModel.candidate_zip_code;
         }
 
-        public FluentValidation.Results.ValidationResult ValidateForm(NewRegistrationViewModel candidateform)
+        private FluentValidation.Results.ValidationResult ValidateRegistration(NewRegistrationViewModel candidateform)
         {
             var validator = new NewRegistrationValidator();
             var result = validator.Validate(candidateform);      

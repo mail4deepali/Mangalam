@@ -17,6 +17,7 @@ namespace MMB.Mangalam.Web.Test
         DatabaseFixture fixture;
 
         const string RegistrationTestUser1 = "1234567890";
+        const string RegistrationTestUser2 = "1234567891";
 
         ConnectionStringService connectionStringService;
         IDbConnection connectionForTest = null;
@@ -27,6 +28,8 @@ namespace MMB.Mangalam.Web.Test
             this.fixture = fixture;
 
             UserHelper.CleanByUserName(RegistrationTestUser1);
+            UserHelper.CleanByUserName(RegistrationTestUser2);
+
             this.connectionForTest = new NpgsqlConnection(ConnectionString.Value);
         }
         
@@ -35,7 +38,8 @@ namespace MMB.Mangalam.Web.Test
         {
             SecurityService securityService = new SecurityService();
             string realPassword = "firlas890";
-            User expectedUser = UserHelper.Get(null, "first_name", false, "last_name", "1234567890", UserRoles.Candidate, "", "1234567890");
+            //tests the lower casing of the password as well
+            User expectedUser = UserHelper.Get(null, "First_name", false, "Last_name", "1234567890", UserRoles.Candidate, "", "1234567890");
             expectedUser.password = securityService.HashUserNameAndPassword(expectedUser.phone_number.ToString(), realPassword);
              
 
@@ -84,8 +88,10 @@ namespace MMB.Mangalam.Web.Test
 
             var response = registrationService.RegisterNewCandidate(newRegistration);
 
-            Assert.Equal("1234567890", response.user_name);
-            Assert.Equal(realPassword, response.password);
+            Assert.True(response.IsSuccess, "Registration Response Failed.");
+
+            Assert.Equal("1234567890", response.Data.user_name);
+            Assert.Equal(realPassword, response.Data.password);
 
             //User
             User actualUser = connectionForTest
@@ -119,13 +125,40 @@ namespace MMB.Mangalam.Web.Test
 
             AddressHelper.Assrt(expectedCandidateAddress, actualCandidateAddress);
 
-            // Candidate actualCandidate = connectionForTest.Query<Candidate>()
+
+        }
+
+        [Fact]
+        public void TestNewRegistrationPhoneNumberValidationFailed()
+        {
+            SecurityService securityService = new SecurityService();
+
+            NewRegistrationViewModel newRegistration1 = NewRegistrationHelper.Get();
+
+            newRegistration1.phone_number = Convert.ToInt64(RegistrationTestUser2);
+
+
+            RegistrationService registrationService = new RegistrationService(this.connectionStringService,
+                securityService, IOptionsHelper.Get());
+
+            var response = registrationService.RegisterNewCandidate(newRegistration1);
+
+            Assert.True(response.IsSuccess, "Registration should be successful.");
+
+            response = registrationService.RegisterNewCandidate(newRegistration1);
+
+            Assert.False(response.IsSuccess, "Registration should fail.");
+
+            Assert.Equal("User phone number already exists", response.Message);
+            
+
 
         }
 
         public void Dispose()
         {
             UserHelper.CleanByUserName(RegistrationTestUser1);
+            UserHelper.CleanByUserName(RegistrationTestUser2);
             this.connectionForTest.Dispose();
         }
     }

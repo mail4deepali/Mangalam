@@ -21,28 +21,10 @@ namespace MMB.Mangalam.Web.Controllers
         }
 
         [HttpPost("register")]
-        public AuthenticateModel? RegisterCandidate([FromBody]NewRegistrationViewModel model)
+        public IActionResult RegisterCandidate([FromBody]NewRegistrationViewModel model)
         {
-            var result = _registrationService.ValidateForm(model);
-            APIResponse<AuthenticateModel> response = new APIResponse<AuthenticateModel>();
-
-            if (result.IsValid)
-            {
-                response.Data = _registrationService.RegisterNewCandidate(model);
-                response.IsSuccess = true;
-                response.StatusCode = HttpStatusCode.OK;
-                return response.Data;
-            }
-            else
-            {
-                return null;
-            }
-            //var options = new JsonSerializerOptions
-            //{
-            //    WriteIndented = true
-            //};
-            // return JsonSerializer.Serialize(response, options);
-         
+            return Ok(_registrationService.RegisterNewCandidate(model));
+                     
         }
 
        
