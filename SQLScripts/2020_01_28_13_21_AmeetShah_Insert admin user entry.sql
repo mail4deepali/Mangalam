@@ -7,4 +7,3 @@ Insert into user_table
 values
 ('mladmin','Vinayak', 'Jondhale', '9850762309', null, 'f78d959290c92c50bcce1a83dddaafbd7f5fe01b696a9e904c3fa37febea71d1')
 
-Select * from user_table
