@@ -21,11 +21,12 @@ namespace MMB.Mangalam.Web.Test
             UserService userService = new UserService(connectionStringService, securityService, 
                 IOptionsHelper.Get());
 
-            var user = userService.Authenticate("mladmin", "ML@Vkt0rY");
+            var response = userService.Authenticate("mladmin", "ML@Vkt0rY");
 
-            Assert.NotNull(user);
-            Assert.NotNull(user.token);
-            Assert.True(user.token.Length > 0);
+            Assert.True(response.IsSuccess);
+            Assert.NotNull(response.Data);
+            Assert.NotNull(response.Data.token);
+            Assert.True(response.Data.token.Length > 0);
 
             //no need to test the saved user
             //var savedUser = userService.Get(user.id);
