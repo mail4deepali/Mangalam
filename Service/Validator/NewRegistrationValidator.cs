@@ -8,8 +8,8 @@ namespace MMB.Mangalam.Web.Model.Helpers
     {
         public NewRegistrationValidator()
         {
-            RuleFor(candidate => candidate.first_name).NotEmpty().MinimumLength(3).WithMessage("Valid user first name required, minimum 3 characters");
-            RuleFor(candidate => candidate.last_name).NotEmpty().MinimumLength(3).WithMessage("Valid user last name required, minimum 3 characters");
+            RuleFor(candidate => candidate.first_name).NotEmpty().MinimumLength(2).WithMessage("Valid user first name required, minimum 3 characters");
+            RuleFor(candidate => candidate.last_name).NotEmpty().MinimumLength(2).WithMessage("Valid user last name required, minimum 3 characters");
             RuleFor(candidate => candidate.phone_number).NotEmpty().GreaterThan(999999999).LessThan(9999999999).WithMessage("phone number must be 10 digit");
             RuleFor(candidate => candidate.address_line_1).NotEmpty().MinimumLength(2).WithMessage("Valid user address line 1 required");
             RuleFor(candidate => candidate.address_line_2).NotEmpty().MinimumLength(2).WithMessage("Valid user address line 2 required");

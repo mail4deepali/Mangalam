@@ -116,6 +116,7 @@ namespace MMB.Mangalam.Web.Service
             else
             {
                 jsonResponse.IsSuccess = false;
+                jsonResponse.Message = result.Messages();
             }
 
             return jsonResponse;
