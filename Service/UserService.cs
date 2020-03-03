@@ -95,5 +95,21 @@ namespace MMB.Mangalam.Web.Service
                 return user;
             }
         }
+
+        public bool IsFirstTimeLogin(int id)
+        {
+            using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))
+            {
+                User user = connection.QuerySingle<User>("Select * from user_table where id = @id and IsUserloginAfterRegistration = False", new { id });
+                if(user == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
     }
 }
