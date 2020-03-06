@@ -9,6 +9,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using MMB.Mangalam.Web.Model.Helpers;
 using Microsoft.IdentityModel.Tokens;
+using MMB.Mangalam.Web.Model.ViewModel;
 
 namespace MMB.Mangalam.Web
 {
@@ -29,11 +30,14 @@ namespace MMB.Mangalam.Web
             services.AddControllers();
 
             var appSettingsSection = Configuration.GetSection("AppSettings");
+            var AazureStorageConnectionStringSection = Configuration.GetSection("AazureStorageConnectionString");
+            services.Configure<AazureStorageConnectionString>(AazureStorageConnectionStringSection);
             services.Configure<AppSettings>(appSettingsSection);
 
             services.AddScoped<UserService, UserService>();
             services.AddScoped<RegistrationService, RegistrationService>();
             services.AddScoped<SecurityService, SecurityService>();          
+            services.AddScoped<FileUploadService, FileUploadService>();          
     
             // configure jwt authentication
             var appSettings = appSettingsSection.Get<AppSettings>();
@@ -62,6 +66,8 @@ namespace MMB.Mangalam.Web
 
             string connectionString = Configuration.GetSection("DefaultConnection:ConnectionString").Value;
             services.AddSingleton<ConnectionStringService>(t => new ConnectionStringService(connectionString));
+            string azureconnectionString = AazureStorageConnectionStringSection.Get<AazureStorageConnectionString>().AzureConnectionString;
+            services.AddSingleton<FileUploadStringService>(t => new FileUploadStringService(azureconnectionString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
