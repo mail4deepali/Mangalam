@@ -16,7 +16,8 @@ namespace MMB.Mangalam.Web.Model
         public string token { get; set; } = "";
         public int address_id { get; set; }
         public int role_id { get; set; }
-        public bool IsUserloginAfterRegistration { get; set; }
+        public bool is_user_login_first_time { get; set; }
+        public string confirm_password { get; set; }
     }
     
 }

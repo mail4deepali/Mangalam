@@ -78,6 +78,25 @@ namespace MMB.Mangalam.Web.Service
 
         }
 
+        public bool IsUserLoginFirstTime(string userName, string hashedPassword)
+        {
+            using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))
+            {
+                User user = connection.QuerySingle<User>("Select * from user_table where user_name = @p0 and password = @p1", new { p0 = userName, p1 = hashedPassword });
+                return user.is_user_login_first_time;
+            }
+        }
+
+        public bool UpdatePassword(int id, string password)
+        {
+            using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))
+            {
+               int value = connection.Execute("Update user_table set password = @p0 where id = @p1", new { id, password});
+                return value > 0 ? true : false;
+            }
+            
+        }
+
         public IEnumerable<User> GetAll()
         {
             using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))

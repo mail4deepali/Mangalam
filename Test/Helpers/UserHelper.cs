@@ -31,7 +31,7 @@ namespace MMB.Mangalam.Web.Test.Helpers
         {
             Assert.Equal(expected.alternate_phone_number, actual.alternate_phone_number);
             Assert.Equal(expected.first_name, actual.first_name);
-            Assert.Equal(expected.IsUserloginAfterRegistration, actual.IsUserloginAfterRegistration);
+            Assert.Equal(expected.is_user_login_first_time, actual.is_user_login_first_time);
             Assert.Equal(expected.last_name, actual.last_name);
             Assert.Equal(expected.password, actual.password);
             Assert.Equal(expected.phone_number, actual.phone_number);
@@ -41,13 +41,13 @@ namespace MMB.Mangalam.Web.Test.Helpers
 
         }
 
-        public static User Get(string alternate_phone_number, string first_name, bool IsUserloginAfterRegistration,
+        public static User Get(string alternate_phone_number, string first_name, bool is_user_login_first_time,
             string last_name, string phone_number, Int16 role_id, string token, string user_name)
         {
             User user = new User();
             user.alternate_phone_number = alternate_phone_number;
             user.first_name = first_name;
-            user.IsUserloginAfterRegistration = IsUserloginAfterRegistration;
+            user.is_user_login_first_time= is_user_login_first_time;
             user.last_name = last_name;
             user.phone_number = phone_number;
             user.role_id = role_id;

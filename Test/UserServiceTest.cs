@@ -33,5 +33,30 @@ namespace MMB.Mangalam.Web.Test
             //Assert.Equal(savedUser.token, user.token);
 
         }
+
+        [Fact]
+        public void TestFirstTimeLogin()
+        {
+            ConnectionStringService connectionStringService
+                = new ConnectionStringService(ConnectionString.Value);
+
+            SecurityService securityService = new SecurityService();
+
+            UserService userService = new UserService(connectionStringService, securityService,
+                IOptionsHelper.Get());
+
+            var response = userService.Authenticate("mladmin", "ML@Vkt0rY");
+
+            Assert.True(response.IsSuccess);
+            Assert.NotNull(response.Data);
+            Assert.NotNull(response.Data.token);
+            Assert.True(response.Data.token.Length > 0);
+            Assert.True(response.Data.is_user_login_first_time);
+            //no need to test the saved user
+            //var savedUser = userService.Get(user.id);
+            //Assert.Equal(savedUser.token, user.token);
+
+        }
+
     }
 }
