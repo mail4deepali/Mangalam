@@ -87,7 +87,7 @@ namespace MMB.Mangalam.Web.Service
                 string hashedPassword = _SecurityService.HashUserNameAndPassword(userName, password);
                 try
                 {
-                    int value = connection.Execute("Update user_table set password = @p0, is_user_login_first_time = 'false' where user_name = @p1", new { p0 = password, p1 = userName });
+                    int value = connection.Execute("Update user_table set password = @p0, is_user_login_first_time = 'false' where user_name = @p1", new { p0 = hashedPassword, p1 = userName });
                     if (value > 0)
                     {
                         response.IsSuccess = true;

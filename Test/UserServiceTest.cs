@@ -35,8 +35,7 @@ namespace MMB.Mangalam.Web.Test
         }
 
         [Fact]
-
-        public void TestIsFirstTimeLogin()
+        public void TestUpdatePassword()
         {
             ConnectionStringService connectionStringService
                 = new ConnectionStringService(ConnectionString.Value);
@@ -45,12 +44,11 @@ namespace MMB.Mangalam.Web.Test
 
             UserService userService = new UserService(connectionStringService, securityService,
                 IOptionsHelper.Get());
-            var response = userService.IsFirstTimeLogin(2);
 
-            Assert.True(response);
-            //Assert.NotNull(response);
-            //Assert.NotNull(response);
-            //Assert.True(response.Data.token.Length > 0);
+            var response = userService.UpdatePassword("992296994", securityService.HashUserNameAndPassword("992296994", "Deeps@123"));
+
+            Assert.True(response.IsSuccess);
         }
+
     }
 }
