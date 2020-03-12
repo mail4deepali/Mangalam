@@ -8,8 +8,9 @@ namespace MMB.Mangalam.Web.Model
 {
     public interface IUserService
     {
-
         JsonResponse<User> Authenticate(string username, string password);
+
+        JsonResponse<User> UpdatePassword(string userName, string password);
         IEnumerable<User> GetAll();
     }
 }

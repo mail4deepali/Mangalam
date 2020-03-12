@@ -29,6 +29,13 @@ namespace MMB.Mangalam.Web.Controllers
             return Ok(_userService.Authenticate(model.user_name, model.password));
         }
 
+        [AllowAnonymous]
+        [HttpPost("updatepassword")]
+        public IActionResult UpdatePassword([FromBody]AuthenticateModel model)
+        {
+            return Ok(_userService.UpdatePassword(model.user_name, model.password));
+        }
+
         [HttpGet]
         public IActionResult GetAll()
         {

@@ -17,7 +17,6 @@ namespace MMB.Mangalam.Web.Model
         public int address_id { get; set; }
         public int role_id { get; set; }
         public bool is_user_login_first_time { get; set; }
-        public string confirm_password { get; set; }
     }
     
 }

@@ -78,22 +78,29 @@ namespace MMB.Mangalam.Web.Service
 
         }
 
-        public bool IsUserLoginFirstTime(string userName, string hashedPassword)
+        public JsonResponse<User> UpdatePassword(string userName, string password)
         {
-            using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))
-            {
-                User user = connection.QuerySingle<User>("Select * from user_table where user_name = @p0 and password = @p1", new { p0 = userName, p1 = hashedPassword });
-                return user.is_user_login_first_time;
-            }
-        }
+            JsonResponse<User> response = new JsonResponse<User>();
 
-        public bool UpdatePassword(int id, string password)
-        {
             using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))
             {
-               int value = connection.Execute("Update user_table set password = @p0 where id = @p1", new { id, password});
-                return value > 0 ? true : false;
+                string hashedPassword = _SecurityService.HashUserNameAndPassword(userName, password);
+                try
+                {
+                    int value = connection.Execute("Update user_table set password = @p0, is_user_login_first_time = 'false' where user_name = @p1", new { p0 = password, p1 = userName });
+                    if (value > 0)
+                    {
+                        response.IsSuccess = true;
+                        response.Message = "Password Updated";
+                    }
+                }
+                catch(Exception ex)
+                {
+                    response.IsSuccess = false;
+                    response.Message = "Password Update Failed" + ex.Message;
+                }
             }
+            return response;
             
         }
 
