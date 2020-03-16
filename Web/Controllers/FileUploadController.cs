@@ -12,6 +12,7 @@ using System.Text.Json;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using MMB.Mangalam.Web.Model.ViewModel;
+using Microsoft.AspNetCore.Http;
 
 namespace MMB.Mangalam.Web.Controllers
 {
@@ -21,19 +22,20 @@ namespace MMB.Mangalam.Web.Controllers
 
     public class FileUploadController : ControllerBase
     {
-        private FileUploadService _fileUploadService;
-        public FileUploadController(FileUploadService fileUploadService)
-        {
-            _fileUploadService = fileUploadService;
-        }
+        //private FileUploadService _fileUploadService;
+        //public FileUploadController(FileUploadService fileUploadService)
+        //{
+        //    _fileUploadService = fileUploadService;
+        //}
 
         [AllowAnonymous]
-        [HttpPost("fileupload")]
-        public async Task<IActionResult> FileUpload([FromBody] FileUploadModel model)  // -> property name must same as formdata key
+        [HttpPost("fileupload"), DisableRequestSizeLimit]
+
+        public async Task<IActionResult> FileUpload([FromBody] IFormFileCollection model)  // -> property name must same as formdata key
         {
 
             JsonResponse<string> jsonResponse = new JsonResponse<string>();
-            jsonResponse = await _fileUploadService.UploadFileToAzureBlobStorageAsync(model);
+          //  jsonResponse = await _fileUploadService.UploadFileToAzureBlobStorageAsync(model);
             return Ok(jsonResponse);
         }
 

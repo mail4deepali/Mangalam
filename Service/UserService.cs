@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using MMB.Mangalam.Web.Model.Helpers;
 using Microsoft.Extensions.Options;
 using MMB.Mangalam.Web.Model.ViewModel;
+using System.Linq;
 
 namespace MMB.Mangalam.Web.Service
 {
@@ -29,15 +30,21 @@ namespace MMB.Mangalam.Web.Service
             _appSettings = appSettings.Value;
         }
 
-        public JsonResponse<User> Authenticate(string userName, string password)
+        public JsonResponse<UserCandidateModel> Authenticate(string userName, string password)
         {
-            JsonResponse<User> response = new JsonResponse<User>();
+            JsonResponse<UserCandidateModel> response = new JsonResponse<UserCandidateModel>();
+            response.Data = new UserCandidateModel();
+            response.Data.candidateList = new List<Candidate>();
 
             string hashedPassword = _SecurityService.HashUserNameAndPassword(userName, password);
             User? user = null;
             using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))
             {
                 user = connection.QueryFirstOrDefault<User>("Select * from user_table where user_name = @p0 and password = @p1", new { p0 = userName, p1 = hashedPassword });
+                if (user != null)
+                {
+                    response.Data.candidateList = connection.Query<Candidate>("Select * from candidate where user_id = @p0 ", new { p0 = user.id }).ToList();
+                }
             }
 
             if (user != null)
@@ -59,7 +66,8 @@ namespace MMB.Mangalam.Web.Service
 
                 response.IsSuccess = true;
                 response.Message = "User Authenticated";
-                response.Data = user;
+                response.Data.user = user;
+               // response.Data = user;
                 //added this as saw in 1 post but seems not needed
                 //using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))
                 //{
@@ -71,16 +79,14 @@ namespace MMB.Mangalam.Web.Service
                 response.IsSuccess = false;
                 response.Message = "Username or password Incorrect.";
             }
-
-           
-
+            
             return response;
 
         }
 
-        public JsonResponse<User> UpdatePassword(string userName, string password)
+        public JsonResponse<UserCandidateModel> UpdatePassword(string userName, string password)
         {
-            JsonResponse<User> response = new JsonResponse<User>();
+            JsonResponse<UserCandidateModel> response = new JsonResponse<UserCandidateModel>();
 
             using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))
             {
