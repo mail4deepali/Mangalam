@@ -8,5 +8,6 @@ namespace MMB.Mangalam.Web.Model.ViewModel
     {
         public User user { get; set; }
         public List<Candidate> candidateList {get; set;}
+        public Candidate selectedCandidate { get; set; }
     }
 }

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using MMB.Mangalam.Web.Service;
 using Microsoft.Extensions.Primitives;
 using Microsoft.AspNetCore.Http;
+using MMB.Mangalam.Web.Model;
+using MMB.Mangalam.Web.Model.ViewModel;
 
 namespace MMB.Mangalam.Web.Controllers
 {
@@ -23,7 +25,7 @@ namespace MMB.Mangalam.Web.Controllers
             _fileUploadService = fileUploadService;
         }
 
-        [HttpPost, DisableRequestSizeLimit]
+        [HttpPost("UploadFile"), DisableRequestSizeLimit]
         public ActionResult UploadFile()
         {
             string[] keys = Request.Form.Keys.ToArray();
@@ -31,9 +33,25 @@ namespace MMB.Mangalam.Web.Controllers
             Request.Form.TryGetValue(keys[1], out candidateID);
             IFormFileCollection formFiles = Request.Form.Files;
             int user_id = int.Parse(userID);
-            int candidate_id = int.Parse( candidateID);
-           return Ok( _fileUploadService.UploadImages(formFiles, user_id, candidate_id));
-            
-          }
+            int candidate_id = int.Parse(candidateID);
+            return Ok(_fileUploadService.UploadImages(formFiles, user_id, candidate_id));
         }
+
+
+        [HttpGet("GetProfileImagesForApproval")]
+        public IActionResult GetProfileImagesForApproval()
+        {
+            return Ok(_fileUploadService.GetProfileImagesForApproval());
+        }
+
+
+        [HttpPost("UpdateToApproveProfile")]
+        public IActionResult UpdateToApproveProfile([FromBody]int imageLogedId)        
+        {
+            return Ok(_fileUploadService.updateToApproveProfile(imageLogedId));
+        }
+
+
+    }
 }
+

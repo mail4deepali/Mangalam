@@ -17,5 +17,6 @@ namespace MMB.Mangalam.Web.Model
         public string content_type { get; set; } = "";
         public DateTime image_upload_time { get; set; } 
 
+        public bool is_approved { get; set; }
     }
 }

@@ -25,8 +25,8 @@ namespace MMB.Mangalam.Web.Test
 
             Assert.True(response.IsSuccess);
             Assert.NotNull(response.Data);
-            Assert.NotNull(response.Data.token);
-            Assert.True(response.Data.token.Length > 0);
+            Assert.NotNull(response.Data.user.token);
+            Assert.True(response.Data.user.token.Length > 0);
 
             //no need to test the saved user
             //var savedUser = userService.Get(user.id);

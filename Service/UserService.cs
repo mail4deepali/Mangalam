@@ -64,6 +64,11 @@ namespace MMB.Mangalam.Web.Service
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 user.token = tokenHandler.WriteToken(token);
 
+                if (response.Data.candidateList!= null && response.Data.candidateList.Count > 0)
+                {
+                    response.Data.selectedCandidate = response.Data.candidateList[0];
+                }
+
                 response.IsSuccess = true;
                 response.Message = "User Authenticated";
                 response.Data.user = user;
