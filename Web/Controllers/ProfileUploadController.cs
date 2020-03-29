@@ -25,7 +25,7 @@ namespace MMB.Mangalam.Web.Controllers
             _fileUploadService = fileUploadService;
         }
 
-        [HttpPost("UploadFile"), DisableRequestSizeLimit]
+        [HttpPost, DisableRequestSizeLimit]
         public ActionResult UploadFile()
         {
             string[] keys = Request.Form.Keys.ToArray();
@@ -46,7 +46,7 @@ namespace MMB.Mangalam.Web.Controllers
 
 
         [HttpPost("UpdateToApproveProfile")]
-        public IActionResult UpdateToApproveProfile([FromBody]int imageLogedId)        
+        public IActionResult UpdateToApproveProfile([FromBody]int imageLogedId)
         {
             return Ok(_fileUploadService.updateToApproveProfile(imageLogedId));
         }
