@@ -12,7 +12,7 @@ namespace MMB.Mangalam.Web.Model
         public string first_name { get; set; }      
         public string last_name { get; set; }
         public long phone_number { get; set; }      
-    
+        public DateTime date_of_birth { get; set; }
         public int gender_id { get; set; }     
         public int religion_id { get; set; }       
         public int caste_id { get; set; }       

@@ -14,6 +14,11 @@ namespace MMB.Mangalam.Web.Model
        
          [Required]
          public long phone_number { get; set; }
+
+        [Required]
+        public DateTime user_birth_date { get; set; }
+
+
          [Required]
          public string address_line_1 { get; set; }
          [Required]
@@ -31,7 +36,9 @@ namespace MMB.Mangalam.Web.Model
          public string candidate_last_name { get; set; }
          [Required]
          public long candidate_phone_number { get; set; }
-         [Required]
+        [Required]
+        public DateTime candidate_birth_date { get; set; }
+        [Required]
          public string candidate_address_line_1 { get; set; }
          [Required]
          public string candidate_address_line_2 { get; set; }

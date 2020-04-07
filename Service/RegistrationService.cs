@@ -64,7 +64,7 @@ namespace MMB.Mangalam.Web.Service
                 user.password = hashedPassword;
                 user.role_id = UserRoles.Candidate;
                 user.is_user_login_first_time = true;
-
+                user.date_of_birth = newRegistrationModel.user_birth_date;
                 using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
                 {
                     dbConnection.Open();
@@ -140,7 +140,7 @@ namespace MMB.Mangalam.Web.Service
             candidate.caste_id = model.caste_id;
             candidate.education_id = model.education_id;
             candidate.family_type_id = model.familytype_id;
-
+            candidate.date_of_birth = model.candidate_birth_date;
         }
        
         private void MapUser(User user, NewRegistrationViewModel newRegistrationModel)
