@@ -37,8 +37,8 @@ namespace MMB.Mangalam.Web
             services.AddScoped<UserService, UserService>();
             services.AddScoped<RegistrationService, RegistrationService>();
             services.AddScoped<SecurityService, SecurityService>();          
-            services.AddScoped<FileUploadService, FileUploadService>();          
-    
+            services.AddScoped<FileUploadService, FileUploadService>();
+            services.AddScoped<SearchProfileService, SearchProfileService>();
             // configure jwt authentication
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
