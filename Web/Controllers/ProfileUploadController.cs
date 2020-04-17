@@ -46,9 +46,9 @@ namespace MMB.Mangalam.Web.Controllers
 
 
         [HttpPost("UpdateToApproveProfile")]
-        public IActionResult UpdateToApproveProfile([FromBody]int imageLogedId)
+        public IActionResult UpdateToApproveProfile([FromBody]ApprovedImageModel imageIDmodel)
         {
-            return Ok(_fileUploadService.updateToApproveProfile(imageLogedId));
+            return Ok(_fileUploadService.updateToApproveProfile(imageIDmodel.imageLoggedId));
         }
 
 

@@ -215,7 +215,7 @@ namespace MMB.Mangalam.Web.Service
 
                     using (var transaction = dbConnection.BeginTransaction())
                     {
-                        dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_approved = true where id = @p0",new { imageLogedId });
+                        dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_approved = true where id = @p0",new { p0 = imageLogedId });
                        
                         transaction.Commit();
 
