@@ -10,6 +10,9 @@ namespace MMB.Mangalam.Web.Model
 
         [Required]
         public DateTime toBirthdate { get; set; }
+        [Required]
+        public int candidate_id { get; set; }
+
     }
     
 }
