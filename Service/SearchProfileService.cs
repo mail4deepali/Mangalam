@@ -55,7 +55,37 @@ namespace MMB.Mangalam.Web.Service
                     {
                         ageRange.fromBirthdate = Convert.ToDateTime(ageRange.fromBirthdate.ToString("yyyy/MM/dd"));
                         ageRange.toBirthdate = Convert.ToDateTime(ageRange.toBirthdate.ToString("yyyy/MM/dd"));
-                        List<CandidateDetails> candidates = dbConnection.Query<CandidateDetails>(" select c.id, c.first_name, c.last_name,  c.date_of_birth, ge.gender, r.religion_name as religion, ca.caste_name as caste, null as image from candidate c join gender ge on c.gender_id = ge.id join religion r on c.religion_id = r.id  left join caste ca on c.caste_id = ca.id  where date_of_birth between  @p0  and  @p1  and c.id != @p2", new { p0 = ageRange.fromBirthdate, p1 = ageRange.toBirthdate, p2 = ageRange.candidate_id }).ToList();
+
+                        string query = @" select c.id, c.first_name, c.last_name, 
+                        c.date_of_birth, ge.gender, r.religion_name as religion, ca.caste_name as caste,
+                        null as image from candidate c 
+                        join gender ge on c.gender_id = ge.id 
+                        join religion r on c.religion_id = r.id 
+                        left join caste ca on c.caste_id = ca.id ";
+                       
+                        if (ageRange.state_id != null)
+                        {
+                            query += @"  join (select ad.id as address_id from address ad join state st on ad.state_id = st.id  where ad.state_id = @p6) as addrs
+                                     on c.address_id = addrs.address_id";
+                        }
+
+                        query += " where date_of_birth between @p0  and @p1  and c.id != @p2";
+
+                        if (ageRange.gender_id != null)
+                        {
+                            query += " and c.gender_id = @p3 "; 
+                        }
+                        if (ageRange.caste_id != null)
+                        {
+                            query += " and c.caste_id = @p4";
+                        }
+                        if (ageRange.education_id != null)
+                        {
+                            query += " and c.education_id = @p5";
+                        }
+
+
+                        List<CandidateDetails> candidates = dbConnection.Query<CandidateDetails>(query, new { p0 = ageRange.fromBirthdate, p1 = ageRange.toBirthdate, p2 = ageRange.candidate_id, p3 = ageRange.gender_id, p4 = ageRange.caste_id, p5 = ageRange.education_id, p6 = ageRange.state_id }).ToList();
                         int[] ids = candidates.Select(c => c.id).ToArray();                        
                         //candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where candidate_id in @p0 ", new { p0 = ids}).ToList();
                         candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true").ToList();
