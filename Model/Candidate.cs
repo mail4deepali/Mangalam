@@ -15,8 +15,8 @@ namespace MMB.Mangalam.Web.Model
         public DateTime date_of_birth { get; set; }
         public int gender_id { get; set; }     
         public int religion_id { get; set; }       
-        public int caste_id { get; set; }       
-        public int education_id { get; set; }
+        public int? caste_id { get; set; }       
+        public int? education_id { get; set; }
         public int family_type_id { get; set; }
         public int address_id { get; set; }
         public int user_id { get; set; }

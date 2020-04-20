@@ -137,8 +137,22 @@ namespace MMB.Mangalam.Web.Service
             candidate.phone_number = model.candidate_phone_number;
             candidate.gender_id = model.gender_id;
             candidate.religion_id = model.religion_id;
-            candidate.caste_id = model.caste_id;
-            candidate.education_id = model.education_id;
+            if (model.caste_id != null)
+            {
+                candidate.caste_id = (int)model.caste_id;
+            }
+            else
+            {
+                candidate.caste_id = null;
+            }
+            if (model.education_id != null)
+            {
+                candidate.education_id = (int)model.education_id;
+            }
+            else 
+            {
+                candidate.education_id = null;
+            }
             candidate.family_type_id = model.familytype_id;
             candidate.date_of_birth = model.candidate_birth_date;
         }
@@ -157,7 +171,14 @@ namespace MMB.Mangalam.Web.Service
             address.address_line_1 = newRegistrationModel.address_line_1;
             address.address_line_2 = newRegistrationModel.address_line_2;
             address.taluka_id = newRegistrationModel.taluka_id;
-            address.state_id = newRegistrationModel.state_id;
+            if (newRegistrationModel.state_id != null)
+            {
+                address.state_id = (int)newRegistrationModel.state_id;
+            }
+            else
+            {
+                address.state_id = null;
+            }
             address.district_id = newRegistrationModel.district_id;
             address.zip_code = newRegistrationModel.zip_code;
             
@@ -168,7 +189,13 @@ namespace MMB.Mangalam.Web.Service
             address.address_line_1 = newRegistrationModel.candidate_address_line_1;
             address.address_line_2 = newRegistrationModel.candidate_address_line_2;
             address.taluka_id = newRegistrationModel.candidate_taluka_id;
-            address.state_id = newRegistrationModel.candidate_state_id;
+            if (newRegistrationModel.candidate_state_id != null)
+            {
+                address.state_id = (int)newRegistrationModel.candidate_state_id;
+            }
+            else {
+                address.state_id = null;
+            }
             address.district_id = newRegistrationModel.candidate_district_id;
             address.zip_code = newRegistrationModel.candidate_zip_code;
         }

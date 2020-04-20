@@ -12,7 +12,7 @@ namespace MMB.Mangalam.Web.Model
         public string address_line_1 { get; set; } = "";
         public string address_line_2 { get; set; } = "";
         
-        public int state_id { get; set; } 
+        public int? state_id { get; set; } 
         public int district_id { get; set; } 
         public int taluka_id { get; set; } 
         public int zip_code { get; set; }

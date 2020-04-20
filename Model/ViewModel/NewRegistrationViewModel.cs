@@ -27,8 +27,8 @@ namespace MMB.Mangalam.Web.Model
          public int taluka_id { get; set; }
          [Required]
          public int district_id { get; set; }
-         [Required]
-         public int state_id { get; set; } 
+         
+         public int? state_id { get; set; } 
        
          [Required]
          public string candidate_first_name { get; set; }
@@ -46,16 +46,14 @@ namespace MMB.Mangalam.Web.Model
          public int candidate_taluka_id { get; set; }
          [Required]
          public int candidate_district_id { get; set; } 
-         [Required]
-         public int candidate_state_id { get; set; }
+         
+         public int? candidate_state_id { get; set; }
         [Required]
         public int gender_id { get; set; }
          [Required]
          public int religion_id { get; set; } 
-         [Required]
-         public int caste_id { get; set; }
-         [Required]
-         public int education_id { get; set; }
+         public int? caste_id { get; set; }
+         public int? education_id { get; set; }
         [Required]
         public int[] language { get; set; } 
         [Required]
