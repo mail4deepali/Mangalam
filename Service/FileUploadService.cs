@@ -140,52 +140,62 @@ namespace MMB.Mangalam.Web.Service
             jsonResponse.Data = new CandidateProfileApprovalModel();
             jsonResponse.Data.profileimages = new List<CandidateImagaeModel>();
             FileInfo[] filesForApproval = new FileInfo[100];
+            DirectoryInfo di;
             var folderName = Path.Combine("Resources", "Images");
+            
             var pathofImages = Path.Combine(Directory.GetCurrentDirectory(), folderName);
-            DirectoryInfo di = new DirectoryInfo(pathofImages);
+
+            if (!Directory.Exists(pathofImages))
+            {
+                di = Directory.CreateDirectory(pathofImages); 
+            }
+            di = new DirectoryInfo(pathofImages);
             FileInfo[] files = di.GetFiles("*.*");
             CandidateImagaeModel imagemodel;
             int i = 0;
             try
             {
-
                 using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
                 {
-                    dbConnection.Open();
 
-                    using (var transaction = dbConnection.BeginTransaction())
+                    if (files.Length > 0)
                     {
-                        candidateImages = dbConnection.Query<CandidateImageLogger>("select * from candidate_image_logger where is_approved = false  ").ToList();
-                        foreach (CandidateImageLogger image in candidateImages)
-                        {
-                            // string path = Directory.GetCurrentDirectory() + "\\" + image.image_path;
-                            // FileStream fileStream = File.Open( path, FileMode.Open);
-                            // files[i++] = PhysicalFile(fileStream, "image/jpeg");
-                            
-                            foreach (FileInfo file in files)
-                            {
-                                if (file.Name == image.image_name && image.is_approved == false)
-                                {
-                                    using (FileStream fs = new FileStream(file.FullName, FileMode.Open, FileAccess.Read))
-                                    {
-                                        // Create a byte array of file stream length
-                                        byte[] ImageData = File.ReadAllBytes(file.FullName);
-                                        string base64String = Convert.ToBase64String(ImageData, 0, ImageData.Length);
 
-                                        imagemodel = new CandidateImagaeModel();
-                                        imagemodel.imageLoggedid = image.id;
-                                        imagemodel.user = dbConnection.Query<User>("Select * from user_table where id = @id", new { image.user_id }).FirstOrDefault();
-                                        imagemodel.candidate = dbConnection.Query<Candidate>("Select * from candidate where id = @id", new { image.candidate_id }).FirstOrDefault();
-                                        imagemodel.image = "data:image/jpeg;base64," + base64String; 
-                                        jsonResponse.Data.profileimages.Add(imagemodel);
-                                        break;
+                        dbConnection.Open();
+
+                        using (var transaction = dbConnection.BeginTransaction())
+                        {
+                            candidateImages = dbConnection.Query<CandidateImageLogger>("select * from candidate_image_logger where is_approved = false  ").ToList();
+                            foreach (CandidateImageLogger image in candidateImages)
+                            {
+                                // string path = Directory.GetCurrentDirectory() + "\\" + image.image_path;
+                                // FileStream fileStream = File.Open( path, FileMode.Open);
+                                // files[i++] = PhysicalFile(fileStream, "image/jpeg");
+
+                                foreach (FileInfo file in files)
+                                {
+                                    if (file.Name == image.image_name && image.is_approved == false)
+                                    {
+                                        using (FileStream fs = new FileStream(file.FullName, FileMode.Open, FileAccess.Read))
+                                        {
+                                            // Create a byte array of file stream length
+                                            byte[] ImageData = File.ReadAllBytes(file.FullName);
+                                            string base64String = Convert.ToBase64String(ImageData, 0, ImageData.Length);
+
+                                            imagemodel = new CandidateImagaeModel();
+                                            imagemodel.imageLoggedid = image.id;
+                                            imagemodel.user = dbConnection.Query<User>("Select * from user_table where id = @id", new { id = image.user_id }).FirstOrDefault();
+                                            imagemodel.candidate = dbConnection.Query<Candidate>("Select * from candidate where id = @id", new { id = image.candidate_id }).FirstOrDefault();
+                                            imagemodel.image = "data:image/jpeg;base64," + base64String;
+                                            jsonResponse.Data.profileimages.Add(imagemodel);
+                                            break;
+                                        }
                                     }
                                 }
+
                             }
-
+                            transaction.Commit();
                         }
-                        transaction.Commit();
-
                     }
                 }
                 jsonResponse.IsSuccess = true;

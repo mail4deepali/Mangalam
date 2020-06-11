@@ -45,6 +45,7 @@ namespace MMB.Mangalam.Web.Service
             var pathofImages = Path.Combine(Directory.GetCurrentDirectory(), folderName);
             DirectoryInfo di = new DirectoryInfo(pathofImages);
             FileInfo[] files = di.GetFiles("*.*");
+            List<CandidateDetails> candidates;
 
             try
             {
@@ -65,33 +66,43 @@ namespace MMB.Mangalam.Web.Service
                        
                         if (ageRange.state_id != null)
                         {
-                            query += @"  join (select ad.id as address_id from address ad join state st on ad.state_id = st.id  where ad.state_id = @p6) as addrs
+                            query += @"  join (select ad.id as address_id from address ad join state st on ad.state_id = st.id  where ad.state_id = @p5) as addrs
                                      on c.address_id = addrs.address_id";
                         }
 
-                        query += " where date_of_birth between @p0  and @p1  and c.id != @p2";
+                        query += " where date_of_birth between @p0  and @p1 ";
 
                         if (ageRange.gender_id != null)
                         {
-                            query += " and c.gender_id = @p3 "; 
+                            query += " and c.gender_id = @p2 "; 
                         }
                         if (ageRange.caste_id != null)
                         {
-                            query += " and c.caste_id = @p4";
+                            query += " and c.caste_id = @p3";
                         }
                         if (ageRange.education_id != null)
                         {
-                            query += " and c.education_id = @p5";
+                            query += " and c.education_id = @p4";
                         }
 
+                        if(ageRange.candidate_id != null && ageRange.candidate_id != 0)
+                        {
+                            query += " and c.id != @p6";
+                        }
 
-                        List<CandidateDetails> candidates = dbConnection.Query<CandidateDetails>(query, new { p0 = ageRange.fromBirthdate, p1 = ageRange.toBirthdate, p2 = ageRange.candidate_id, p3 = ageRange.gender_id, p4 = ageRange.caste_id, p5 = ageRange.education_id, p6 = ageRange.state_id }).ToList();
-                        int[] ids = candidates.Select(c => c.id).ToArray();                        
+                        if (ageRange.candidate_id != null && ageRange.candidate_id != 0)
+                        {
+                            candidates = dbConnection.Query<CandidateDetails>(query, new { p0 = ageRange.fromBirthdate, p1 = ageRange.toBirthdate, p2 = ageRange.gender_id, p3 = ageRange.caste_id, p4 = ageRange.education_id, p5 = ageRange.state_id , p6 = ageRange.candidate_id}).ToList();
+                        }
+                        else
+                        {
+                            candidates = dbConnection.Query<CandidateDetails>(query, new { p0 = ageRange.fromBirthdate, p1 = ageRange.toBirthdate, p2 = ageRange.gender_id, p3 = ageRange.caste_id, p4 = ageRange.education_id, p5 = ageRange.state_id }).ToList();
+                        }
+                            int[] ids = candidates.Select(c => c.id).ToArray();                        
                         //candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where candidate_id in @p0 ", new { p0 = ids}).ToList();
                         candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true").ToList();
                         foreach (CandidateDetails candidate in candidates)
-                        {
-                         
+                        {                         
                             foreach (CandidateImageLogger image in candidateImages)
                             {
                                 if (candidate.id == image.candidate_id)
