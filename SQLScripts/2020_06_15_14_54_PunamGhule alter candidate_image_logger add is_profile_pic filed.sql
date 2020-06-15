@@ -1,0 +1,2 @@
+alter table candidate_image_logger
+add column is_profile_pic boolean

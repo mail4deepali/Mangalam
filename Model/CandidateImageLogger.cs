@@ -18,5 +18,7 @@ namespace MMB.Mangalam.Web.Model
         public DateTime image_upload_time { get; set; } 
 
         public bool is_approved { get; set; }
+
+        public bool is_profile_pic { get; set; }
     }
 }

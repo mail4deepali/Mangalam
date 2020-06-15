@@ -12,6 +12,8 @@ using MMB.Mangalam.Web.Model.Helpers;
 using Microsoft.Extensions.Options;
 using MMB.Mangalam.Web.Model.ViewModel;
 using System.Linq;
+using Microsoft.AspNetCore.Routing.Matching;
+using System.IO;
 
 namespace MMB.Mangalam.Web.Service
 {
@@ -20,7 +22,6 @@ namespace MMB.Mangalam.Web.Service
     {
         ConnectionStringService? _ConnectionStringService = null;
         SecurityService? _SecurityService = null;
-
         private readonly AppSettings _appSettings;
      
         public UserService(ConnectionStringService connectionStringService, SecurityService securityService, IOptions<AppSettings> appSettings)
@@ -34,7 +35,14 @@ namespace MMB.Mangalam.Web.Service
         {
             JsonResponse<UserCandidateModel> response = new JsonResponse<UserCandidateModel>();
             response.Data = new UserCandidateModel();
-            response.Data.candidateList = new List<Candidate>();
+            response.Data.candidateList = new List<CandidateDetails>();
+            List<CandidateDetails> candidates = new List<CandidateDetails>();
+            List<CandidateImageLogger> candidateImages;
+            var folderName = Path.Combine("Resources", "Images");
+            var pathofImages = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+            DirectoryInfo di = new DirectoryInfo(pathofImages);
+            FileInfo[] files = di.GetFiles("*.*");
+
 
             string hashedPassword = _SecurityService.HashUserNameAndPassword(userName, password);
             User? user = null;
@@ -43,7 +51,47 @@ namespace MMB.Mangalam.Web.Service
                 user = connection.QueryFirstOrDefault<User>("Select * from user_table where user_name = @p0 and password = @p1", new { p0 = userName, p1 = hashedPassword });
                 if (user != null)
                 {
-                    response.Data.candidateList = connection.Query<Candidate>("Select * from candidate where user_id = @p0 ", new { p0 = user.id }).ToList();
+
+                    string query = @" select c.id, c.first_name, c.last_name, 
+                        c.date_of_birth, ge.gender, r.religion_name as religion, ca.caste_name as caste,
+                        null as image from candidate c 
+                        join gender ge on c.gender_id = ge.id 
+                        join religion r on c.religion_id = r.id 
+                        left join caste ca on c.caste_id = ca.id  where c.user_id = @p0";
+                     
+                    candidates = connection.Query<CandidateDetails>(query, new { p0 = user.id }).ToList();
+
+                    candidateImages = connection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true").ToList();
+
+
+                    foreach (CandidateDetails candidate in candidates)
+                    {
+                        foreach (CandidateImageLogger image in candidateImages)
+                        {
+                            if (candidate.id == image.candidate_id && image.is_approved == true && image.is_profile_pic == true)
+                            {
+                                foreach (FileInfo file in files)
+                                {
+                                    if (file.Name == image.image_name)
+                                    {
+                                        using (FileStream fs = new FileStream(file.FullName, FileMode.Open, FileAccess.Read))
+                                        {
+                                            byte[] ImageData = File.ReadAllBytes(file.FullName);
+                                            string base64String = Convert.ToBase64String(ImageData, 0, ImageData.Length);
+                                            candidate.image = "data:image/jpeg;base64," + base64String;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+
+                        response.Data.candidateList.Add(candidate);
+
+                    }
+
+                    response.Data.selectedCandidate = response.Data.candidateList.FirstOrDefault();
                 }
             }
 

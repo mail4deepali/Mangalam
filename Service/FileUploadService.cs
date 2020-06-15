@@ -77,36 +77,39 @@ namespace MMB.Mangalam.Web.Service
 
                     using (var transaction = dbConnection.BeginTransaction())
                     {
-                        for (int i = 0; i < Files.Count; i++)
-
+                        if (Files.Count > 0)
                         {
-                            var file = Files[i];
-                            var folderName = Path.Combine("Resources", "Images");
-                            var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
-                            if (file.Length > 0)
-                            {
-                                var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
-                                var fullPath = Path.Combine(pathToSave, fileName);
-                                var dbPath = Path.Combine(folderName, fileName);
+                            for (int i = 0; i < Files.Count; i++)
 
-                                using (var stream = new FileStream(fullPath, FileMode.Create))
+                            {
+                                var file = Files[i];
+                                var folderName = Path.Combine("Resources", "Images");
+                                var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+                                if (file.Length > 0)
                                 {
-                                    file.CopyTo(stream);
+                                    var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+                                    var fullPath = Path.Combine(pathToSave, fileName);
+                                    var dbPath = Path.Combine(folderName, fileName);
+
+                                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                                    {
+                                        file.CopyTo(stream);
+                                    }
+
+                                    candidateImageLogger.user_id = user_id;
+                                    candidateImageLogger.candidate_id = candidate_id;
+                                    candidateImageLogger.image_name = file.FileName;
+                                    candidateImageLogger.image_path = dbPath;
+                                    candidateImageLogger.content_type = file.ContentType;
+                                    candidateImageLogger.image_upload_time = DateTime.Now;
+                                    candidateImageLogger.is_approved = false;
+                                    candidateImageLogger.is_profile_pic = true;
+                                    dbConnection.Insert<CandidateImageLogger>(candidateImageLogger, transaction);
+
                                 }
 
-                                candidateImageLogger.user_id = user_id;
-                                candidateImageLogger.candidate_id = candidate_id;
-                                candidateImageLogger.image_name = file.FileName;
-                                candidateImageLogger.image_path = dbPath;
-                                candidateImageLogger.content_type = file.ContentType;
-                                candidateImageLogger.image_upload_time = DateTime.Now;
-                                candidateImageLogger.is_approved = false;
-                                dbConnection.Insert<CandidateImageLogger>(candidateImageLogger, transaction);
-
                             }
-
                         }
-
                         transaction.Commit();
 
                         jsonResponse.Data = "Profile images uploaded successfully";
@@ -212,7 +215,7 @@ namespace MMB.Mangalam.Web.Service
             }
         }
 
-        public JsonResponse<string> updateToApproveProfile(int imageLogedId)
+        public JsonResponse<string> updateToApproveProfile(ApprovedImageModel approveModel)
         {
             JsonResponse<string> jsonResponse = new JsonResponse<string>();
         
@@ -225,8 +228,12 @@ namespace MMB.Mangalam.Web.Service
 
                     using (var transaction = dbConnection.BeginTransaction())
                     {
-                        dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_approved = true where id = @p0",new { p0 = imageLogedId });
-                       
+                        CandidateImageLogger imageDetails = dbConnection.Query<CandidateImageLogger>("select * from  candidate_image_logger where id = @p0", new { p0 = approveModel.imageLoggedId }).FirstOrDefault();
+
+                        dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_profile_pic = false where user_id = @p0 and candidate_id = @p1 and is_approved = true  and id != @p2", new { p0 = imageDetails.user_id, @p1 = imageDetails.candidate_id, @p2 = imageDetails.id });
+
+                        dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_approved = true , is_profile_pic = true  where id = @p0", new { p0 = approveModel.imageLoggedId });
+
                         transaction.Commit();
 
                     }

@@ -54,6 +54,7 @@ namespace MMB.Mangalam.Web.Service
                     dbConnection.Open();
                     using (var transaction = dbConnection.BeginTransaction())
                     {
+
                         ageRange.fromBirthdate = Convert.ToDateTime(ageRange.fromBirthdate.ToString("yyyy/MM/dd"));
                         ageRange.toBirthdate = Convert.ToDateTime(ageRange.toBirthdate.ToString("yyyy/MM/dd"));
 
@@ -101,11 +102,12 @@ namespace MMB.Mangalam.Web.Service
                             int[] ids = candidates.Select(c => c.id).ToArray();                        
                         //candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where candidate_id in @p0 ", new { p0 = ids}).ToList();
                         candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true").ToList();
+
                         foreach (CandidateDetails candidate in candidates)
                         {                         
                             foreach (CandidateImageLogger image in candidateImages)
                             {
-                                if (candidate.id == image.candidate_id)
+                                if (candidate.id == image.candidate_id && image.is_approved == true && image.is_profile_pic == true)
                                 {
                                     foreach (FileInfo file in files)
                                     {
