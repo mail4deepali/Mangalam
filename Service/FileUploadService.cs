@@ -64,10 +64,13 @@ namespace MMB.Mangalam.Web.Service
 
         }
 
-        public JsonResponse<string> UploadImages(IFormFileCollection Files, int user_id, int candidate_id)
+        public JsonResponse<string> UploadImages(IFormFileCollection Files, int user_id, int candidate_id, Boolean isProfile)
         {
             CandidateImageLogger candidateImageLogger = new CandidateImageLogger();
             JsonResponse<string> jsonResponse = new JsonResponse<string>();
+            var folderName = Path.Combine("Resources", "Images");
+            var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+
             try
             {
 
@@ -83,8 +86,6 @@ namespace MMB.Mangalam.Web.Service
 
                             {
                                 var file = Files[i];
-                                var folderName = Path.Combine("Resources", "Images");
-                                var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
                                 if (file.Length > 0)
                                 {
                                     var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
@@ -103,7 +104,15 @@ namespace MMB.Mangalam.Web.Service
                                     candidateImageLogger.content_type = file.ContentType;
                                     candidateImageLogger.image_upload_time = DateTime.Now;
                                     candidateImageLogger.is_approved = false;
-                                    candidateImageLogger.is_profile_pic = true;
+                                    if (isProfile)
+                                    {
+                                        candidateImageLogger.is_profile_pic = true;
+                                        candidateImageLogger.is_from_other_three_photos = false;
+                                    }
+                                    else {
+                                        candidateImageLogger.is_from_other_three_photos = true;
+                                        candidateImageLogger.is_profile_pic = false;
+                                    }
                                     dbConnection.Insert<CandidateImageLogger>(candidateImageLogger, transaction);
 
                                 }

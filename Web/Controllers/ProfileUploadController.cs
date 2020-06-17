@@ -34,10 +34,11 @@ namespace MMB.Mangalam.Web.Controllers
             IFormFileCollection formFiles = Request.Form.Files;
             int user_id = int.Parse(userID);
             int candidate_id = int.Parse(candidateID);
-            return Ok(_fileUploadService.UploadImages(formFiles, user_id, candidate_id));
+            Boolean isProfile = true;
+            return Ok(_fileUploadService.UploadImages(formFiles, user_id, candidate_id, isProfile));
         }
 
-
+        
         [HttpGet("GetProfileImagesForApproval")]
         public IActionResult GetProfileImagesForApproval()
         {
@@ -49,6 +50,20 @@ namespace MMB.Mangalam.Web.Controllers
         public IActionResult UpdateToApproveProfile([FromBody] ApprovedImageModel approveModel)
         {
             return Ok(_fileUploadService.updateToApproveProfile(approveModel));
+        }
+
+        [HttpPost("UploadOtherPhotos"), DisableRequestSizeLimit]
+        public IActionResult UploadOtherPhotos()
+        {
+
+            string[] keys = Request.Form.Keys.ToArray();
+            Request.Form.TryGetValue(keys[0], out userID);
+            Request.Form.TryGetValue(keys[1], out candidateID);
+            IFormFileCollection formFiles = Request.Form.Files;
+            int user_id = int.Parse(userID);
+            int candidate_id = int.Parse(candidateID);
+            Boolean isProfile = false;
+            return Ok(_fileUploadService.UploadImages(formFiles, user_id, candidate_id, isProfile));
         }
 
 
