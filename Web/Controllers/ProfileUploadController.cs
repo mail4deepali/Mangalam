@@ -67,6 +67,21 @@ namespace MMB.Mangalam.Web.Controllers
         }
 
 
+
+        [HttpPost("GetUplodedPhotos")]
+        public IActionResult GetUplodedPhotos([FromBody]UserCandidateIDModel iDModel)
+        {
+            return Ok(_fileUploadService.GetUploadedPhotos(iDModel));
+        }
+
+
+        [HttpPost("DeletePhoto")]
+        public IActionResult DeletePhoto([FromBody] ApprovedImageModel approveModel)
+        {
+            return Ok(_fileUploadService.DeletePhoto(approveModel));
+        }
+
+
     }
 }
 

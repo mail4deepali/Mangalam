@@ -92,8 +92,6 @@ namespace MMB.Mangalam.Web.Service
                             else
                             {
                                  folderName = Path.Combine("Resources", "Images", "User", user_id.ToString(), "Candidates", candidate_id.ToString(), "Other Images");
-                                 dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_from_other_three_photos = false where user_id = @p0 and candidate_id = @p1  and is_from_other_three_photos = true ", new { p0 = user_id, @p1 = candidate_id });
-
                             }
                             var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
 
@@ -106,14 +104,6 @@ namespace MMB.Mangalam.Web.Service
                                 di = new DirectoryInfo(pathToSave);
                             }
 
-                            if (isProfile == false)
-                            {
-                                foreach (FileInfo fi in di.GetFiles())
-                                {
-                                    fi.Delete();
-                                }
-                            }
-
                             for (int i = 0; i < Files.Count; i++)
                             {
                                 var file = Files[i];
@@ -122,7 +112,6 @@ namespace MMB.Mangalam.Web.Service
                                     var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
                                     var fullPath = Path.Combine(pathToSave, fileName);
                                     var dbPath = Path.Combine(folderName, fileName);
-
                                     using (var stream = new FileStream(fullPath, FileMode.Create))
                                     {
                                         file.CopyTo(stream);
@@ -130,6 +119,8 @@ namespace MMB.Mangalam.Web.Service
 
                                     candidateImageLogger.user_id = user_id;
                                     candidateImageLogger.candidate_id = candidate_id;
+
+
                                     candidateImageLogger.image_name = file.FileName;
                                     candidateImageLogger.image_path = dbPath;
                                     candidateImageLogger.content_type = file.ContentType;
@@ -177,8 +168,6 @@ namespace MMB.Mangalam.Web.Service
 
         public JsonResponse<CandidateProfileApprovalModel> GetProfileImagesForApproval()
         {
-            // FileStream stream = File.Open(@"E:\\Test.jpg");
-            //return File(stream, "image/jpeg")
             List<CandidateImageLogger> candidateImages = new List<CandidateImageLogger>();
             JsonResponse<CandidateProfileApprovalModel> jsonResponse = new JsonResponse<CandidateProfileApprovalModel>();
             jsonResponse.Data = new CandidateProfileApprovalModel();
@@ -209,13 +198,10 @@ namespace MMB.Mangalam.Web.Service
 
                         using (var transaction = dbConnection.BeginTransaction())
                         {
-                            candidateImages = dbConnection.Query<CandidateImageLogger>("select * from candidate_image_logger where is_approved = false and is_profile_pic = true ").ToList();
+                            candidateImages = dbConnection.Query<CandidateImageLogger>("select * from candidate_image_logger where is_approved = false and is_profile_pic = true or is_from_other_three_photos = true ").ToList();
                             foreach (CandidateImageLogger image in candidateImages)
                             {
-                                // string path = Directory.GetCurrentDirectory() + "\\" + image.image_path;
-                                // FileStream fileStream = File.Open( path, FileMode.Open);
-                                // files[i++] = PhysicalFile(fileStream, "image/jpeg");
-
+                                
                                 foreach (FileInfo file in files)
                                 {
                                     if (file.Name == image.image_name && image.is_approved == false)
@@ -225,8 +211,9 @@ namespace MMB.Mangalam.Web.Service
                                             // Create a byte array of file stream length
                                             byte[] ImageData = File.ReadAllBytes(file.FullName);
                                             string base64String = Convert.ToBase64String(ImageData, 0, ImageData.Length);
-
                                             imagemodel = new CandidateImagaeModel();
+                                            imagemodel.is_profile = image.is_profile_pic;
+                                            imagemodel.is_from_other_three_photos = image.is_from_other_three_photos;                                            
                                             imagemodel.imageLoggedid = image.id;
                                             imagemodel.user = dbConnection.Query<User>("Select * from user_table where id = @id", new { id = image.user_id }).FirstOrDefault();
                                             imagemodel.candidate = dbConnection.Query<Candidate>("Select * from candidate where id = @id", new { id = image.candidate_id }).FirstOrDefault();
@@ -256,6 +243,84 @@ namespace MMB.Mangalam.Web.Service
             }
         }
 
+
+        public JsonResponse<CandidateProfileApprovalModel> GetUploadedPhotos(UserCandidateIDModel IDModel)
+        {
+            
+            List<CandidateImageLogger> candidateImages = new List<CandidateImageLogger>();
+            JsonResponse<CandidateProfileApprovalModel> jsonResponse = new JsonResponse<CandidateProfileApprovalModel>();
+            jsonResponse.Data = new CandidateProfileApprovalModel();
+            jsonResponse.Data.profileimages = new List<CandidateImagaeModel>();
+            FileInfo[] filesForApproval = new FileInfo[100];
+            DirectoryInfo di;
+            var folderName = Path.Combine("Resources", "Images");
+            var pathofImages = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+
+            if (!Directory.Exists(pathofImages))
+            {
+                di = Directory.CreateDirectory(pathofImages);
+            }
+            di = new DirectoryInfo(pathofImages);
+            FileInfo[] files = di.GetFiles("*.*", SearchOption.AllDirectories);
+            CandidateImagaeModel imagemodel;
+            int i = 0;
+            try
+            {
+                using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
+                {
+
+                    if (files.Length > 0)
+                    {
+
+                        dbConnection.Open();
+
+                        using (var transaction = dbConnection.BeginTransaction())
+                        {
+                            candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true and is_from_other_three_photos and user_id = @p0 and candidate_id = @p1 ", new { p0 = IDModel.user_id, p1 = IDModel.candidate_id }).ToList();
+
+                            foreach (CandidateImageLogger image in candidateImages)
+                            {
+                                foreach (FileInfo file in files)
+                                {
+                                    if (file.Name == image.image_name)
+                                    {
+                                        using (FileStream fs = new FileStream(file.FullName, FileMode.Open, FileAccess.Read))
+                                        {
+                                            byte[] ImageData = File.ReadAllBytes(file.FullName);
+                                            string base64String = Convert.ToBase64String(ImageData, 0, ImageData.Length);
+                                            imagemodel = new CandidateImagaeModel();
+                                            imagemodel.is_profile = image.is_profile_pic;
+                                            imagemodel.is_from_other_three_photos = image.is_from_other_three_photos;
+                                            imagemodel.imageLoggedid = image.id;
+                                            imagemodel.user = dbConnection.Query<User>("Select * from user_table where id = @id", new { id = image.user_id }).FirstOrDefault();
+                                            imagemodel.candidate = dbConnection.Query<Candidate>("Select * from candidate where id = @id", new { id = image.candidate_id }).FirstOrDefault();
+                                            imagemodel.image = "data:image/jpeg;base64," + base64String;
+                                            jsonResponse.Data.profileimages.Add(imagemodel);
+                                            break;
+                                        }
+                                    }
+                                }
+
+                            }
+                            transaction.Commit();
+                        }
+                    }
+                }
+                jsonResponse.IsSuccess = true;
+                jsonResponse.Message = "success";
+                return jsonResponse;
+
+            }
+            catch (Exception e)
+            {
+
+                jsonResponse.IsSuccess = false;
+                jsonResponse.Message = "fail";
+                return jsonResponse;
+            }
+        }
+
+
         public JsonResponse<string> updateToApproveProfile(ApprovedImageModel approveModel)
         {
             JsonResponse<string> jsonResponse = new JsonResponse<string>();
@@ -280,7 +345,7 @@ namespace MMB.Mangalam.Web.Service
                             var path = Path.Combine(Directory.GetCurrentDirectory(), folderName);
 
                             if (Directory.Exists(path))
-                            {                             
+                            {
                                 di = new DirectoryInfo(path);
 
                                 foreach (FileInfo fi in di.GetFiles())
@@ -292,10 +357,18 @@ namespace MMB.Mangalam.Web.Service
                                 }
 
                             }
+
                             dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_profile_pic = false where user_id = @p0 and candidate_id = @p1 and is_approved = true and is_profile_pic = true  and id != @p2", new { p0 = imageDetails.user_id, @p1 = imageDetails.candidate_id, @p2 = imageDetails.id });
 
                             dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_approved = true , is_profile_pic = true  where id = @p0", new { p0 = approveModel.imageLoggedId });
+
                         }
+                        else if (imageDetails.is_from_other_three_photos == true)
+                        {
+                            dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_approved = true where id = @p0", new { p0 = approveModel.imageLoggedId });
+
+                        }
+
                         transaction.Commit();
 
                     }
@@ -315,6 +388,62 @@ namespace MMB.Mangalam.Web.Service
         }
 
 
+        public JsonResponse<string> DeletePhoto(ApprovedImageModel approveModel)
+        {
+            JsonResponse<string> jsonResponse = new JsonResponse<string>();
+            string folderName;
+            DirectoryInfo di;
+            folderName = Path.Combine("Resources", "Images");
+            var pathofImages = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+            di = new DirectoryInfo(pathofImages);
+            FileInfo[] files = di.GetFiles("*.*", SearchOption.AllDirectories);
+
+            try
+            {
+
+                using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
+                {
+                    dbConnection.Open();
+
+                    using (var transaction = dbConnection.BeginTransaction())
+                    {
+                       string image_name = dbConnection.Query<string>("select image_name from  candidate_image_logger where id = @p0", new { p0 = approveModel.imageLoggedId }).FirstOrDefault();
+
+
+                        foreach (FileInfo file in files)
+                        {
+                            if (file.Name == image_name)
+                            {
+                                file.Delete();
+                                break;
+                            }
+                        }
+
+                          dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_approved = false, is_from_other_three_photos = false  where id = @p0", new { p0 = approveModel.imageLoggedId });
+                                             
+                          transaction.Commit();
+
+                    }
+                }
+                jsonResponse.IsSuccess = true;
+                jsonResponse.Message = "success";
+                return jsonResponse;
+
+            }
+            catch (Exception e)
+            {
+
+                jsonResponse.IsSuccess = false;
+                jsonResponse.Message = "fail";
+                return jsonResponse;
+            }
+        }
+
+
     }
+
+
 }
+
+
 

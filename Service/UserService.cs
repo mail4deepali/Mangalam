@@ -41,9 +41,12 @@ namespace MMB.Mangalam.Web.Service
             var folderName = Path.Combine("Resources", "Images");
             var pathofImages = Path.Combine(Directory.GetCurrentDirectory(), folderName);
             DirectoryInfo di = new DirectoryInfo(pathofImages);
-            FileInfo[] files = di.GetFiles("*.*", SearchOption.AllDirectories);
+            FileInfo[] files = null;
+            if (Directory.Exists(pathofImages))
+            {
+                files = di.GetFiles("*.*", SearchOption.AllDirectories);
 
-
+            }
             string hashedPassword = _SecurityService.HashUserNameAndPassword(userName, password);
             User? user = null;
             using (IDbConnection connection = new NpgsqlConnection(_ConnectionStringService.Value))
@@ -70,16 +73,20 @@ namespace MMB.Mangalam.Web.Service
                         {
                             if (candidate.id == image.candidate_id && image.is_approved == true && image.is_profile_pic == true)
                             {
-                                foreach (FileInfo file in files)
+                                if (files != null && files.Length > 0)
                                 {
-                                    if (file.Name == image.image_name)
+
+                                    foreach (FileInfo file in files)
                                     {
-                                        using (FileStream fs = new FileStream(file.FullName, FileMode.Open, FileAccess.Read))
+                                        if (file.Name == image.image_name)
                                         {
-                                            byte[] ImageData = File.ReadAllBytes(file.FullName);
-                                            string base64String = Convert.ToBase64String(ImageData, 0, ImageData.Length);
-                                            candidate.image = "data:image/jpeg;base64," + base64String;
-                                            break;
+                                            using (FileStream fs = new FileStream(file.FullName, FileMode.Open, FileAccess.Read))
+                                            {
+                                                byte[] ImageData = File.ReadAllBytes(file.FullName);
+                                                string base64String = Convert.ToBase64String(ImageData, 0, ImageData.Length);
+                                                candidate.image = "data:image/jpeg;base64," + base64String;
+                                                break;
+                                            }
                                         }
                                     }
                                 }
@@ -91,7 +98,12 @@ namespace MMB.Mangalam.Web.Service
 
                     }
 
+                    response.Data.user = user;
                     response.Data.selectedCandidate = response.Data.candidateList.FirstOrDefault();
+                    if (response.Data.selectedCandidate != null)
+                    {
+                        response.Data.otherPhotosCount = connection.Query("SELECT id FROM candidate_image_logger where is_from_other_three_photos = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = user.id, p1 = response.Data.selectedCandidate.id }).Count();
+                    }
                 }
             }
 
