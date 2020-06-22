@@ -70,6 +70,7 @@ namespace MMB.Mangalam.Web.Service
             JsonResponse<string> jsonResponse = new JsonResponse<string>();
             string folderName;
             DirectoryInfo di;
+            List<string> image_names = new List<string>();
 
             try
             {
@@ -86,8 +87,9 @@ namespace MMB.Mangalam.Web.Service
                             if (isProfile == true)
                             {
                                  folderName = Path.Combine("Resources", "Images", "User", user_id.ToString(), "Candidates", candidate_id.ToString(), "Profile Image");
+                                 image_names = dbConnection.Query<string>("select image_name from  candidate_image_logger where user_id = @p0 and candidate_id = @p1 and is_approved = false  and is_profile_pic = true ", new { p0 = user_id, @p1 = candidate_id }).ToList();
                                  dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_profile_pic = false where user_id = @p0 and candidate_id = @p1 and is_approved = false  and is_profile_pic = true ", new { p0 = user_id, @p1 = candidate_id });
-
+                               
                             }
                             else
                             {
@@ -102,6 +104,20 @@ namespace MMB.Mangalam.Web.Service
                             else
                             {
                                 di = new DirectoryInfo(pathToSave);
+                                if (isProfile && image_names != null && image_names.Count > 0)
+                                {
+                                    foreach (string image_name in image_names)
+                                    {
+                                        foreach (var fi in di.GetFiles())
+                                        {
+                                            if (fi.Name == image_name)
+                                            {
+                                                fi.Delete();
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
                             }
 
                             for (int i = 0; i < Files.Count; i++)
@@ -276,7 +292,13 @@ namespace MMB.Mangalam.Web.Service
 
                         using (var transaction = dbConnection.BeginTransaction())
                         {
-                            candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true and is_from_other_three_photos and user_id = @p0 and candidate_id = @p1 ", new { p0 = IDModel.user_id, p1 = IDModel.candidate_id }).ToList();
+                            candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true and   is_from_other_three_photos = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = IDModel.user_id, p1 = IDModel.candidate_id }).ToList();
+
+                            CandidateImageLogger profile = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true and is_profile_pic = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = IDModel.user_id, p1 = IDModel.candidate_id }).FirstOrDefault();
+                            if (profile != null)
+                            {
+                                candidateImages.Add(profile);
+                            }
 
                             foreach (CandidateImageLogger image in candidateImages)
                             {
@@ -419,7 +441,7 @@ namespace MMB.Mangalam.Web.Service
                             }
                         }
 
-                          dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_approved = false, is_from_other_three_photos = false  where id = @p0", new { p0 = approveModel.imageLoggedId });
+                          dbConnection.Query<CandidateImageLogger>("update candidate_image_logger set is_approved = false, is_from_other_three_photos = false, is_profile_pic = false  where id = @p0", new { p0 = approveModel.imageLoggedId });
                                              
                           transaction.Commit();
 
