@@ -55,8 +55,9 @@ namespace MMB.Mangalam.Web.Service
                     using (var transaction = dbConnection.BeginTransaction())
                     {
 
-                        ageRange.fromBirthdate = Convert.ToDateTime(ageRange.fromBirthdate.ToString("yyyy/MM/dd"));
-                        ageRange.toBirthdate = Convert.ToDateTime(ageRange.toBirthdate.ToString("yyyy/MM/dd"));
+                        
+                        string q = @"select * from candidate WHERE DATE_PART('year',Age( CURRENT_DATE , date_of_birth))  >= 23 and 
+                            DATE_PART('year',Age( CURRENT_DATE , date_of_birth)) <= 26";
 
                         string query = @" select c.id, c.first_name, c.last_name, 
                         c.date_of_birth, ge.gender, r.religion_name as religion, ca.caste_name as caste,
@@ -71,7 +72,8 @@ namespace MMB.Mangalam.Web.Service
                                      on c.address_id = addrs.address_id";
                         }
 
-                        query += " where date_of_birth between @p0  and @p1 ";
+                        query += @" where DATE_PART('year',Age( CURRENT_DATE , c.date_of_birth))  >= @p0 and 
+                            DATE_PART('year', Age(CURRENT_DATE,c. date_of_birth)) <= @p1 ";
 
                         if (ageRange.gender_id != null)
                         {
@@ -93,11 +95,11 @@ namespace MMB.Mangalam.Web.Service
 
                         if (ageRange.candidate_id != null && ageRange.candidate_id != 0)
                         {
-                            candidates = dbConnection.Query<CandidateDetails>(query, new { p0 = ageRange.fromBirthdate, p1 = ageRange.toBirthdate, p2 = ageRange.gender_id, p3 = ageRange.caste_id, p4 = ageRange.education_id, p5 = ageRange.state_id , p6 = ageRange.candidate_id}).ToList();
+                            candidates = dbConnection.Query<CandidateDetails>(query, new { p0 = ageRange.fromAge, p1 = ageRange.toAge, p2 = ageRange.gender_id, p3 = ageRange.caste_id, p4 = ageRange.education_id, p5 = ageRange.state_id , p6 = ageRange.candidate_id}).ToList();
                         }
                         else
                         {
-                            candidates = dbConnection.Query<CandidateDetails>(query, new { p0 = ageRange.fromBirthdate, p1 = ageRange.toBirthdate, p2 = ageRange.gender_id, p3 = ageRange.caste_id, p4 = ageRange.education_id, p5 = ageRange.state_id }).ToList();
+                            candidates = dbConnection.Query<CandidateDetails>(query, new { p0 = ageRange.fromAge, p1 = ageRange.toAge, p2 = ageRange.gender_id, p3 = ageRange.caste_id, p4 = ageRange.education_id, p5 = ageRange.state_id }).ToList();
                         }
                             int[] ids = candidates.Select(c => c.id).ToArray();                        
                         //candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where candidate_id in @p0 ", new { p0 = ids}).ToList();
