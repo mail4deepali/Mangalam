@@ -44,7 +44,7 @@ namespace MMB.Mangalam.Web.Service
             var folderName = Path.Combine("Resources", "Images");
             var pathofImages = Path.Combine(Directory.GetCurrentDirectory(), folderName);
             DirectoryInfo di = new DirectoryInfo(pathofImages);
-            FileInfo[] files = di.GetFiles("*.*");
+            FileInfo[] files = di.GetFiles("*.*", SearchOption.AllDirectories);
             List<CandidateDetails> candidates;
 
             try
