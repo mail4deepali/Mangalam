@@ -55,10 +55,6 @@ namespace MMB.Mangalam.Web.Service
                     using (var transaction = dbConnection.BeginTransaction())
                     {
 
-                        
-                        string q = @"select * from candidate WHERE DATE_PART('year',Age( CURRENT_DATE , date_of_birth))  >= 23 and 
-                            DATE_PART('year',Age( CURRENT_DATE , date_of_birth)) <= 26";
-
                         string query = @" select c.id, c.first_name, c.last_name, 
                         c.date_of_birth, ge.gender, r.religion_name as religion, ca.caste_name as caste,
                         null as image from candidate c 
