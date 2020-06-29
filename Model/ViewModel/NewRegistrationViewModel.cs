@@ -61,5 +61,7 @@ namespace MMB.Mangalam.Web.Model
 
         public int zip_code { get; set; }
         public int candidate_zip_code { get; set; }
+
+        public int marital_status_id { get; set; }
     }
 }
