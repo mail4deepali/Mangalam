@@ -138,6 +138,8 @@ namespace MMB.Mangalam.Web.Service
             candidate.gender_id = model.gender_id;
             candidate.religion_id = model.religion_id;
             candidate.marital_status_id = model.marital_status_id;
+            candidate.occupation = model.occupation;
+
             if (model.caste_id != null)
             {
                 candidate.caste_id = (int)model.caste_id;

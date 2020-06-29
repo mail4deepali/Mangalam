@@ -14,5 +14,7 @@ namespace MMB.Mangalam.Web.Model
         public string religion { get; set; }
         public String caste { get; set; }
         public string image { get; set; }
+        public string age { get; set; } 
+        public string occupation { get; set; }
     }
 }

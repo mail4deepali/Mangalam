@@ -57,7 +57,7 @@ namespace MMB.Mangalam.Web.Service
 
                         string query = @" select c.id, c.first_name, c.last_name, 
                         c.date_of_birth, ge.gender, r.religion_name as religion, ca.caste_name as caste,
-                        null as image from candidate c 
+                        null as image , DATE_PART('year', Age(CURRENT_DATE,c. date_of_birth)) as age , c.occupation as occupation from candidate c 
                         join gender ge on c.gender_id = ge.id 
                         join religion r on c.religion_id = r.id 
                         left join caste ca on c.caste_id = ca.id ";

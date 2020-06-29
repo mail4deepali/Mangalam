@@ -21,5 +21,6 @@ namespace MMB.Mangalam.Web.Model
         public int address_id { get; set; }
         public int user_id { get; set; }
         public int marital_status_id { get; set; }
+        public string occupation { get; set; }
     }
 }
