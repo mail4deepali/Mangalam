@@ -65,5 +65,6 @@ namespace MMB.Mangalam.Web.Model
         public int marital_status_id { get; set; }
 
         public string occupation { get; set; }
+        public string otheroccupation { get; set; }
     }
 }
