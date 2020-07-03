@@ -57,9 +57,14 @@ namespace MMB.Mangalam.Web.Service
 
                         string query = @" select c.id, c.first_name, c.last_name, 
                         c.date_of_birth, ge.gender, r.religion_name as religion, ca.caste_name as caste,
-                        null as image , DATE_PART('year', Age(CURRENT_DATE,c. date_of_birth)) as age , c.occupation as occupation from candidate c 
+                        null as image , DATE_PART('year', Age(CURRENT_DATE,c. date_of_birth)) as age ,
+                        c.occupation as occupation, c.phone_number, c.gender_id, c.religion_id,
+                        c.caste_id, c.education_id, c.family_type_id, adr.address_line_1, adr.address_line_2, adr.taluka_id, 
+                        adr.district_id, adr.state_id, c.user_id, c.marital_status_id , null as language,
+                        null as otheroccupation, adr.id as address_id from candidate c 
                         join gender ge on c.gender_id = ge.id 
-                        join religion r on c.religion_id = r.id 
+                        join religion r on c.religion_id = r.id
+                        left join address adr on c.address_id = adr.id
                         left join caste ca on c.caste_id = ca.id ";
                        
                         if (ageRange.state_id != null)
@@ -67,6 +72,7 @@ namespace MMB.Mangalam.Web.Service
                             query += @"  join (select ad.id as address_id from address ad join state st on ad.state_id = st.id  where ad.state_id = @p5) as addrs
                                      on c.address_id = addrs.address_id";
                         }
+
 
                         query += @" where DATE_PART('year',Age( CURRENT_DATE , c.date_of_birth))  >= @p0 and 
                             DATE_PART('year', Age(CURRENT_DATE,c. date_of_birth)) <= @p1 ";
@@ -102,7 +108,9 @@ namespace MMB.Mangalam.Web.Service
                         candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true").ToList();
 
                         foreach (CandidateDetails candidate in candidates)
-                        {                         
+                        {   
+                            candidate.language = dbConnection.Query<int>("select language_id from candidate_language_map  where candidate_id = @p0", new { p0 = candidate.id}).ToArray();
+
                             foreach (CandidateImageLogger image in candidateImages)
                             {
                                 if (candidate.id == image.candidate_id && image.is_approved == true && image.is_profile_pic == true)

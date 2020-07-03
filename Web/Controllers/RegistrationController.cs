@@ -21,9 +21,16 @@ namespace MMB.Mangalam.Web.Controllers
         }
 
         [HttpPost("register")]
-        public IActionResult RegisterCandidate([FromBody]NewRegistrationViewModel model)
+        public IActionResult RegisterCandidate([FromBody] NewRegistrationViewModel model)
         {
             return Ok(_registrationService.RegisterNewCandidate(model));
+                     
+        }
+        
+        [HttpPost("editcandidate")]
+        public IActionResult Editcandidate([FromBody] EditCandidateViewModel candidate)
+        {
+            return Ok(_registrationService.Editcandidate(candidate));
                      
         }
 

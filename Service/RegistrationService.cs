@@ -167,6 +167,47 @@ namespace MMB.Mangalam.Web.Service
             candidate.date_of_birth = model.candidate_birth_date;
         }
        
+      
+        private void MapEditCandidate(Candidate candidate, EditCandidateViewModel model)
+        {
+            candidate.user_id = model.user_id;
+            candidate.id = model.candidate_id;
+            candidate.address_id = model.address_id;
+            candidate.first_name = model.candidate_first_name;
+            candidate.last_name = model.candidate_last_name;
+            candidate.phone_number = model.candidate_phone_number;
+            candidate.gender_id = model.gender_id;
+            candidate.religion_id = model.religion_id;
+            candidate.marital_status_id = model.marital_status_id;
+            if (model.occupation != null && model.occupation != "" && model.occupation == "Other")
+            {
+                candidate.occupation = model.otheroccupation;
+            }
+            else if (model.occupation != null && model.occupation != "" && model.occupation != "Other")
+            {
+                candidate.occupation = model.occupation;
+            }
+
+            if (model.caste_id != null)
+            {
+                candidate.caste_id = (int)model.caste_id;
+            }
+            else
+            {
+                candidate.caste_id = null;
+            }
+            if (model.education_id != null)
+            {
+                candidate.education_id = (int)model.education_id;
+            }
+            else 
+            {
+                candidate.education_id = null;
+            }
+            candidate.family_type_id = model.familytype_id;
+            candidate.date_of_birth = model.candidate_birth_date;
+        }
+       
         private void MapUser(User user, NewRegistrationViewModel newRegistrationModel)
         {
             user.first_name = newRegistrationModel.first_name;
@@ -209,6 +250,23 @@ namespace MMB.Mangalam.Web.Service
             address.district_id = newRegistrationModel.candidate_district_id;
             address.zip_code = newRegistrationModel.candidate_zip_code;
         }
+        
+        private void MapEditCandidateAddress(Address address, EditCandidateViewModel editCandidateViewModel)
+        {
+            address.address_line_1 = editCandidateViewModel.candidate_address_line_1;
+            address.address_line_2 = editCandidateViewModel.candidate_address_line_2;
+            address.taluka_id = editCandidateViewModel.candidate_taluka_id;
+            if (editCandidateViewModel.candidate_state_id != null)
+            {
+                address.state_id = (int)editCandidateViewModel.candidate_state_id;
+            }
+            else {
+                address.state_id = null;
+            }
+            address.district_id = editCandidateViewModel.candidate_district_id;
+            address.zip_code = editCandidateViewModel.candidate_zip_code;
+            address.id = editCandidateViewModel.address_id;
+        }
 
         private FluentValidation.Results.ValidationResult ValidateRegistration(NewRegistrationViewModel candidateform)
         {
@@ -217,5 +275,88 @@ namespace MMB.Mangalam.Web.Service
             return result;
         }
 
+        private FluentValidation.Results.ValidationResult ValidateEditCandidate(EditCandidateViewModel candidateform)
+        {
+            var validator = new EditCandidateValidator();
+            var result = validator.Validate(candidateform);      
+            return result;
+        }
+
+
+        public JsonResponse<String> Editcandidate(EditCandidateViewModel editCandidateViewModel)
+        {
+            JsonResponse<String> jsonResponse = new JsonResponse<String>();
+
+            var result = ValidateEditCandidate(editCandidateViewModel);
+            if(result.IsValid)
+            {
+               
+                Address candidateAddress = new Address();
+                Candidate candidate = new Candidate();
+                CandidateLanguageMap candidateLanguageMap;
+
+
+                MapEditCandidate(candidate, editCandidateViewModel);
+                MapEditCandidateAddress(candidateAddress, editCandidateViewModel);
+
+                using (IDbConnection dbConnection = new NpgsqlConnection(_ConnectionStringService.Value))
+                {
+                    dbConnection.Open();
+
+                    using (var transaction = dbConnection.BeginTransaction())
+                    {
+
+                        try
+                        {
+                               dbConnection.Update<Address>(candidateAddress, transaction);
+
+                               dbConnection.Update<Candidate>(candidate, transaction);
+
+                               dbConnection.Query("delete from candidate_language_map where candidate_id = @p0", new { p0 = candidate.id});
+
+                            for (int i = 0; i < editCandidateViewModel.language.Length; i++)
+                            {
+                                candidateLanguageMap = new CandidateLanguageMap();
+                                candidateLanguageMap.candidate_id = candidate.id;
+                                candidateLanguageMap.language_id = editCandidateViewModel.language[i];
+                                dbConnection.Insert<CandidateLanguageMap>(candidateLanguageMap, transaction);
+                            }
+
+                            transaction.Commit();
+
+                            jsonResponse.Data = "Updated successfully";
+                            jsonResponse.IsSuccess = true;
+                            jsonResponse.Message = "Candidate Updated Successful";
+
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ex.Message.Contains("user_table_phone_number_unique"))
+                            {
+                                jsonResponse.Message = "User phone number already exists";
+                            }
+                            else
+                            {
+                                jsonResponse.Message = "Some error occured. Please contact administrator.";
+                            }
+
+                            transaction.Rollback();
+                            jsonResponse.IsSuccess = false;
+
+                        }
+                    }
+                }
+            }
+            else
+            {
+                jsonResponse.IsSuccess = false;
+                jsonResponse.Message = result.Messages();
+            }
+
+            return jsonResponse;
+
+        }
+
+        
     }
 }
