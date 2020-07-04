@@ -8,7 +8,6 @@ namespace MMB.Mangalam.Web.Model.ViewModel
     {
         public int otherPhotosCount { get; set; }
         public User user { get; set; }
-        public List<CandidateDetails> candidateList {get; set;}
-        public CandidateDetails selectedCandidate { get; set; }
+        public CandidateDetails candidate { get; set; }
     }
 }

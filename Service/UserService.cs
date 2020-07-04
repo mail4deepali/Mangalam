@@ -35,8 +35,7 @@ namespace MMB.Mangalam.Web.Service
         {
             JsonResponse<UserCandidateModel> response = new JsonResponse<UserCandidateModel>();
             response.Data = new UserCandidateModel();
-            response.Data.candidateList = new List<CandidateDetails>();
-            List<CandidateDetails> candidates = new List<CandidateDetails>();
+            CandidateDetails candidate ;
             List<CandidateImageLogger> candidateImages;
             var folderName = Path.Combine("Resources", "Images");
             var pathofImages = Path.Combine(Directory.GetCurrentDirectory(), folderName);
@@ -61,13 +60,13 @@ namespace MMB.Mangalam.Web.Service
                         join gender ge on c.gender_id = ge.id 
                         join religion r on c.religion_id = r.id 
                         left join caste ca on c.caste_id = ca.id  where c.user_id = @p0";
-                     
-                    candidates = connection.Query<CandidateDetails>(query, new { p0 = user.id }).ToList();
+
+                    candidate = connection.Query<CandidateDetails>(query, new { p0 = user.id }).FirstOrDefault();
 
                     candidateImages = connection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true").ToList();
 
 
-                    foreach (CandidateDetails candidate in candidates)
+                    if (candidate != null)
                     {
                         foreach (CandidateImageLogger image in candidateImages)
                         {
@@ -94,15 +93,13 @@ namespace MMB.Mangalam.Web.Service
 
                         }
 
-                        response.Data.candidateList.Add(candidate);
-
+                        response.Data.candidate = candidate;
                     }
 
                     response.Data.user = user;
-                    response.Data.selectedCandidate = response.Data.candidateList.FirstOrDefault();
-                    if (response.Data.selectedCandidate != null)
+                    if (response.Data.candidate != null)
                     {
-                        response.Data.otherPhotosCount = connection.Query("SELECT id FROM candidate_image_logger where is_from_other_three_photos = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = user.id, p1 = response.Data.selectedCandidate.id }).Count();
+                        response.Data.otherPhotosCount = connection.Query("SELECT id FROM candidate_image_logger where is_from_other_three_photos = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = user.id, p1 = response.Data.candidate.id }).Count();
                     }
                 }
             }
@@ -124,11 +121,7 @@ namespace MMB.Mangalam.Web.Service
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 user.token = tokenHandler.WriteToken(token);
 
-                if (response.Data.candidateList!= null && response.Data.candidateList.Count > 0)
-                {
-                    response.Data.selectedCandidate = response.Data.candidateList[0];
-                }
-
+                
                 response.IsSuccess = true;
                 response.Message = "User Authenticated";
                 response.Data.user = user;
