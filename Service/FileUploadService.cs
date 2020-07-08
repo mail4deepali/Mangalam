@@ -214,7 +214,7 @@ namespace MMB.Mangalam.Web.Service
 
                         using (var transaction = dbConnection.BeginTransaction())
                         {
-                            candidateImages = dbConnection.Query<CandidateImageLogger>("select * from candidate_image_logger where is_approved = false and is_profile_pic = true or is_from_other_three_photos = true ").ToList();
+                            candidateImages = dbConnection.Query<CandidateImageLogger>("select * from candidate_image_logger where (is_approved = false and is_profile_pic = true) or ( is_approved = false and is_from_other_three_photos = true) ").ToList();
                             foreach (CandidateImageLogger image in candidateImages)
                             {
                                 

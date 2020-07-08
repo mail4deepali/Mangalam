@@ -57,8 +57,8 @@ namespace MMB.Mangalam.Web.Service
                     string query = @" select c.id, c.first_name, c.last_name, 
                         c.date_of_birth, ge.gender, r.religion_name as religion, ca.caste_name as caste,
                         null as image from candidate c 
-                        join gender ge on c.gender_id = ge.id 
-                        join religion r on c.religion_id = r.id 
+                        left join gender ge on c.gender_id = ge.id 
+                        left join religion r on c.religion_id = r.id 
                         left join caste ca on c.caste_id = ca.id  where c.user_id = @p0";
 
                     candidate = connection.Query<CandidateDetails>(query, new { p0 = user.id }).FirstOrDefault();
