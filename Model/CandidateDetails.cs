@@ -17,6 +17,13 @@ namespace MMB.Mangalam.Web.Model
         public string age { get; set; } 
         public string occupation { get; set; }
         public long phone_number { get; set; }
+        public string education { get; set; }
+        public string family_type { get; set; }
+        public string taluka { get; set; }
+        public string district { get; set; }
+        public string state { get; set; }
+        public string marital_status { get; set; }
+        public string[] languages { get; set; }
         public int gender_id { get; set; }
         public int religion_id { get; set; }
         public int? caste_id { get; set; }

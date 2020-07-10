@@ -36,7 +36,7 @@ namespace MMB.Mangalam.Web.Service
             JsonResponse<UserCandidateModel> response = new JsonResponse<UserCandidateModel>();
             response.Data = new UserCandidateModel();
             CandidateDetails candidate ;
-            List<CandidateImageLogger> candidateImages;
+            List<CandidateImageLogger> candidateImages = null;
             var folderName = Path.Combine("Resources", "Images");
             var pathofImages = Path.Combine(Directory.GetCurrentDirectory(), folderName);
             DirectoryInfo di = new DirectoryInfo(pathofImages);
@@ -44,7 +44,6 @@ namespace MMB.Mangalam.Web.Service
             if (Directory.Exists(pathofImages))
             {
                 files = di.GetFiles("*.*", SearchOption.AllDirectories);
-
             }
             string hashedPassword = _SecurityService.HashUserNameAndPassword(userName, password);
             User? user = null;
@@ -53,24 +52,40 @@ namespace MMB.Mangalam.Web.Service
                 user = connection.QueryFirstOrDefault<User>("Select * from user_table where user_name = @p0 and password = @p1", new { p0 = userName, p1 = hashedPassword });
                 if (user != null)
                 {
-
                     string query = @" select c.id, c.first_name, c.last_name, 
                         c.date_of_birth, ge.gender, r.religion_name as religion, ca.caste_name as caste,
-                        null as image from candidate c 
-                        left join gender ge on c.gender_id = ge.id 
-                        left join religion r on c.religion_id = r.id 
-                        left join caste ca on c.caste_id = ca.id  where c.user_id = @p0";
+                        null as image , DATE_PART('year', Age(CURRENT_DATE,c. date_of_birth)) as age ,
+                        c.occupation as occupation, c.phone_number, c.gender_id, c.religion_id,
+                        c.caste_id, c.education_id, c.family_type_id, adr.address_line_1, adr.address_line_2, adr.taluka_id, 
+                        adr.district_id, adr.state_id, c.user_id, c.marital_status_id , null as language,
+                        null as otheroccupation, adr.id as address_id, e.education_degree as education, 
+                        f.family_type, t.taluka_name as taluka, d.district_name as district, 
+                        st.state_name as state, ms.marital_status , null as languages  from candidate c 
+                        join gender ge on c.gender_id = ge.id 
+                        join religion r on c.religion_id = r.id
+                        left join caste ca on c.caste_id = ca.id 
+                        left join highest_education e on c.education_id = e.id
+                        left join family_type f on c.family_type_id = f.id
+                        left join marital_status ms on c.marital_status_id = ms.id
+                        left join address adr on c.address_id = adr.id
+                        left join taluka t on adr.taluka_id = t.id
+                        left join district d on adr.district_id = d.id
+                        left join state st on adr.state_id = st.id
+                        where c.user_id = @p0";
 
                     candidate = connection.Query<CandidateDetails>(query, new { p0 = user.id }).FirstOrDefault();
 
-                    candidateImages = connection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true").ToList();
 
-
-                    if (candidate != null)
+                    if (candidate!= null)
+                    {
+                        candidate.languages = connection.Query<string>("select name from language l join candidate_language_map clm on l.id = clm.language_id where clm.candidate_id = @p0", new { p0 = candidate.id }).ToArray();
+                        candidateImages = connection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where candidate_id = @p0", new { p0 = candidate.id }).ToList();
+                    }
+                    if (candidate != null && candidateImages != null)
                     {
                         foreach (CandidateImageLogger image in candidateImages)
                         {
-                            if (candidate.id == image.candidate_id && image.is_approved == true && image.is_profile_pic == true)
+                            if (candidate.id == image.candidate_id && image.is_profile_pic == true)
                             {
                                 if (files != null && files.Length > 0)
                                 {
@@ -100,6 +115,16 @@ namespace MMB.Mangalam.Web.Service
                     if (response.Data.candidate != null)
                     {
                         response.Data.otherPhotosCount = connection.Query("SELECT id FROM candidate_image_logger where is_from_other_three_photos = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = user.id, p1 = response.Data.candidate.id }).Count();
+                        var count = connection.Query("SELECT id FROM candidate_image_logger where is_profile_pic = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = user.id, p1 = response.Data.candidate.id }).Count();
+                        
+                        if (count >= 1)
+                        {
+                            response.Data.hasProfilePhoto = true;
+                        }
+                        else
+                        {
+                            response.Data.hasProfilePhoto = false;
+                        }
                     }
                 }
             }

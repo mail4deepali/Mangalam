@@ -292,9 +292,9 @@ namespace MMB.Mangalam.Web.Service
 
                         using (var transaction = dbConnection.BeginTransaction())
                         {
-                            candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true and   is_from_other_three_photos = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = IDModel.user_id, p1 = IDModel.candidate_id }).ToList();
+                            candidateImages = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_from_other_three_photos = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = IDModel.user_id, p1 = IDModel.candidate_id }).ToList();
 
-                            CandidateImageLogger profile = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_approved = true and is_profile_pic = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = IDModel.user_id, p1 = IDModel.candidate_id }).FirstOrDefault();
+                            CandidateImageLogger profile = dbConnection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where  is_profile_pic = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = IDModel.user_id, p1 = IDModel.candidate_id }).FirstOrDefault();
                             if (profile != null)
                             {
                                 candidateImages.Add(profile);

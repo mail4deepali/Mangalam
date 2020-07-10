@@ -75,8 +75,14 @@ namespace MMB.Mangalam.Web.Controllers
         }
 
 
-        [HttpPost("DeletePhoto")]
-        public IActionResult DeletePhoto([FromBody] ApprovedImageModel approveModel)
+        [HttpPost("DeleteOtherPhoto")]
+        public IActionResult DeleteOtherPhoto([FromBody] ApprovedImageModel approveModel)
+        {
+            return Ok(_fileUploadService.DeletePhoto(approveModel));
+        }
+
+        [HttpPost("DeleteProfilePhoto")]
+        public IActionResult DeleteProfilePhoto([FromBody] ApprovedImageModel approveModel)
         {
             return Ok(_fileUploadService.DeletePhoto(approveModel));
         }
