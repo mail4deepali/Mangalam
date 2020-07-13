@@ -19,5 +19,6 @@ namespace MMB.Mangalam.Web.Model
         public bool is_approved { get; set; }
         public bool is_profile_pic { get; set; }
         public bool is_from_other_three_photos { get; set; }
+        public bool is_deleted { get; set; }
     }
 }

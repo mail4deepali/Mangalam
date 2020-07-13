@@ -79,13 +79,13 @@ namespace MMB.Mangalam.Web.Service
                     if (candidate!= null)
                     {
                         candidate.languages = connection.Query<string>("select name from language l join candidate_language_map clm on l.id = clm.language_id where clm.candidate_id = @p0", new { p0 = candidate.id }).ToArray();
-                        candidateImages = connection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where candidate_id = @p0", new { p0 = candidate.id }).ToList();
+                        candidateImages = connection.Query<CandidateImageLogger>("SELECT * FROM candidate_image_logger where is_profile_pic = true and is_deleted = false and candidate_id = @p0", new { p0 = candidate.id }).ToList();
                     }
                     if (candidate != null && candidateImages != null)
                     {
                         foreach (CandidateImageLogger image in candidateImages)
                         {
-                            if (candidate.id == image.candidate_id && image.is_profile_pic == true)
+                            if (candidate.id == image.candidate_id && image.is_profile_pic == true && candidateImages.Count == 1)
                             {
                                 if (files != null && files.Length > 0)
                                 {
@@ -104,6 +104,31 @@ namespace MMB.Mangalam.Web.Service
                                         }
                                     }
                                 }
+                            }
+                            else {
+
+                                if (candidate.id == image.candidate_id && image.is_profile_pic == true && image.is_approved == false)
+                                {
+                                    if (files != null && files.Length > 0)
+                                    {
+
+                                        foreach (FileInfo file in files)
+                                        {
+                                            if (file.Name == image.image_name)
+                                            {
+                                                using (FileStream fs = new FileStream(file.FullName, FileMode.Open, FileAccess.Read))
+                                                {
+                                                    byte[] ImageData = File.ReadAllBytes(file.FullName);
+                                                    string base64String = Convert.ToBase64String(ImageData, 0, ImageData.Length);
+                                                    candidate.image = "data:image/jpeg;base64," + base64String;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+
                             }
 
                         }
