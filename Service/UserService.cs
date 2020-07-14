@@ -139,7 +139,7 @@ namespace MMB.Mangalam.Web.Service
                     response.Data.user = user;
                     if (response.Data.candidate != null)
                     {
-                        response.Data.otherPhotosCount = connection.Query("SELECT id FROM candidate_image_logger where is_from_other_three_photos = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = user.id, p1 = response.Data.candidate.id }).Count();
+                        response.Data.otherPhotosCount = connection.Query("SELECT id FROM candidate_image_logger where is_from_other_three_photos = true and is_deleted = false and user_id = @p0 and candidate_id = @p1 ", new { p0 = user.id, p1 = response.Data.candidate.id }).Count();
                         var count = connection.Query("SELECT id FROM candidate_image_logger where is_profile_pic = true and user_id = @p0 and candidate_id = @p1 ", new { p0 = user.id, p1 = response.Data.candidate.id }).Count();
                         
                         if (count >= 1)
