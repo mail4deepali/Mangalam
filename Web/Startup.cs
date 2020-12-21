@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using MMB.Mangalam.Web.Model.Helpers;
 using Microsoft.IdentityModel.Tokens;
 using MMB.Mangalam.Web.Model.ViewModel;
+using System.IO;
 
 namespace MMB.Mangalam.Web
 {
@@ -66,21 +67,31 @@ namespace MMB.Mangalam.Web
 
             string connectionString = Configuration.GetSection("DefaultConnection:ConnectionString").Value;
             services.AddSingleton<ConnectionStringService>(t => new ConnectionStringService(connectionString));
-            string azureconnectionString = AazureStorageConnectionStringSection.Get<AazureStorageConnectionString>().AzureConnectionString;
-            services.AddSingleton<FileUploadStringService>(t => new FileUploadStringService(azureconnectionString));
+            //string azureconnectionString = AazureStorageConnectionStringSection.Get<AazureStorageConnectionString>().AzureConnectionString;
+            //services.AddSingleton<FileUploadStringService>(t => new FileUploadStringService(azureconnectionString));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseCors(options => options.WithOrigins("http://localhost:4200","http://localhost").AllowAnyMethod());
             }
 
-            
+            app.UseCors(options => options.WithOrigins("http://localhost:4200", "http://localhost").AllowAnyMethod());
 
+            app.Use(async (context, next) =>
+            {
+                await next();
+                if (context.Response.StatusCode == 404 && !Path.HasExtension(context.Request.Path.Value))
+                {
+                    context.Request.Path = "//index.html";
+                    await next();
+                }
+            });
+            app.UseDefaultFiles();
             app.UseHttpsRedirection();
             
             app.UseRouting();
